@@ -1,0 +1,40 @@
+services:
+  db:
+    container_name: 'binh-duong-bus-db'
+    image: postgres:17-alpine3.20
+    ports:
+      - '5432:5432'
+    volumes:
+      - postgres:/var/lib/postgresql/data
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: changemeinprod!
+      POSTGRES_DB: postgres
+
+  cache:
+    image: redis:7-alpine3.20
+    container_name: 'binh-duong-bus-redis'
+    ports:
+      - '6379:6379'
+    command: redis-server --save 20 1 --loglevel warning --requirepass eYVX7EwVmmxKPCDmwMtyKVge8oLd2t81
+    volumes:
+      - cache:/data
+
+  server:
+    container_name: 'binh-duong-bus-backend'
+    build:
+      context: .
+    ports:
+      - '8080:8080'
+    environment:
+      SPRING_DATASOURCE_URL: "jdbc:postgresql://db:5432/postgres"
+      SPRING_DATASOURCE_USERNAME: postgres
+      SPRING_DATASOURCE_PASSWORD: changemeinprod!
+      SPRING_JPA_HIBERNATE_DDL_AUTO: update
+    depends_on:
+      - db
+      - cache
+
+volumes:
+    postgres:
+    cache:
