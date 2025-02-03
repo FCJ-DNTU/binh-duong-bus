@@ -13,8 +13,8 @@ public class BackendApplication {
 		SpringApplication.run(BackendApplication.class, args);
 	}
 
-	@GetMapping("/greeting")
-	public String greeting() {
-		return "Hello world!, welcome to Binh Duong Bus";
+	@GetMapping("/healthcheck")
+	public String healthcheck() {
+		return "Binh Duong Bus Backend is good as F*CK!!";
 	}
 }

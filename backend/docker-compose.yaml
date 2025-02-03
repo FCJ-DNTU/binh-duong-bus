@@ -10,6 +10,11 @@ services:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: changemeinprod!
       POSTGRES_DB: postgres
+    healthcheck:
+      test: [ "CMD", "pg_isready", "-U", "postgres" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
   cache:
     image: redis:7-alpine3.20
@@ -19,21 +24,31 @@ services:
     command: redis-server --save 20 1 --loglevel warning --requirepass eYVX7EwVmmxKPCDmwMtyKVge8oLd2t81
     volumes:
       - cache:/data
+    healthcheck:
+      test: [ "CMD", "redis-cli", "-a", "eYVX7EwVmmxKPCDmwMtyKVge8oLd2t81", "--raw", "incr", "ping" ]
 
   server:
     container_name: 'binh-duong-bus-backend'
     build:
       context: .
+      target: development
+    develop:
+      watch:
+        - action: rebuild
+          path: .
     ports:
-      - '8080:8080'
+      - '8080:8080' # running port
+      - '8000:8000' # debugging port
     environment:
       SPRING_DATASOURCE_URL: "jdbc:postgresql://db:5432/postgres"
       SPRING_DATASOURCE_USERNAME: postgres
       SPRING_DATASOURCE_PASSWORD: changemeinprod!
       SPRING_JPA_HIBERNATE_DDL_AUTO: update
     depends_on:
-      - db
-      - cache
+      db:
+        condition: service_healthy
+      cache:
+        condition: service_healthy
 
 volumes:
     postgres:
