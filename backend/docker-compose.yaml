@@ -1,11 +1,13 @@
 services:
   db:
     container_name: 'binh-duong-bus-db'
-    image: postgres:17-alpine3.20
+    image: postgis/postgis:17-3.5
+    #    image: postgres:17-alpine3.20
     ports:
       - '5432:5432'
     volumes:
       - postgres:/var/lib/postgresql/data
+      - ./init/init.sql:/docker-entrypoint-initdb.d/init.sql
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: changemeinprod!
@@ -51,5 +53,5 @@ services:
         condition: service_healthy
 
 volumes:
-    postgres:
-    cache:
+  postgres:
+  cache:

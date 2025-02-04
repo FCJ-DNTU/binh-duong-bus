@@ -46,11 +46,12 @@ public class GlobalExceptionHandler {
      * @return an ErrorResponse contains Http Status, message, and current path.
      */
     @ExceptionHandler(Exception.class)
+    @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
     public ErrorResponse handleUnknownException(Exception e, HttpServletRequest req) {
-        logger.error("Exception caught: ", e);
+//        logger.error("Exception caught: ", e)
         return new ErrorResponse(
                 HttpStatus.INTERNAL_SERVER_ERROR,
-                e.getMessage(),
+                "An unexpected error occurred",
                 req.getRequestURL().toString());
     }
 }
