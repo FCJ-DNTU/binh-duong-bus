@@ -1,36 +1,38 @@
 package fcj.dntu.vn.backend.models;
 
+import fcj.dntu.vn.backend.models.enums.DirectionEnum;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
-import org.locationtech.jts.geom.Point;
 
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.UUID;
 
 @Entity
-@Table(name = "buses",
+@Table(name = "time_lines",
         indexes = {
                 @Index(name = "idx_route_id", columnList = "route_id"),
-                @Index(name = "idx_bus_number", columnList = "bus_number"),
-                @Index(name = "idx_location", columnList = "location", unique = false) // Spatial index for geolocation
+                @Index(name = "idx_departure_time", columnList = "departure_time"),
+                @Index(name = "idx_route_direction", columnList = "route_id, direction")
         })
+@NoArgsConstructor
+@AllArgsConstructor
 @Getter
 @Setter
-@AllArgsConstructor
-@NoArgsConstructor
 @Builder
-public class BusModel {
+public class TimeLineModel {
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
 
-    @Column(name = "bus_number", nullable = false)
-    private Integer busNumber;
+    @Enumerated(EnumType.STRING)
+    @Column(name = "direction", nullable = false)
+    private DirectionEnum direction;
 
-    @Column(columnDefinition = "geometry(Point,4326)", nullable = false)
-    private Point location;
+    @Column(name = "departure_time", nullable = false)
+    private LocalTime departureTime;
 
     @ManyToOne
     @JoinColumn(name = "route_id", nullable = false)
@@ -40,7 +42,7 @@ public class BusModel {
     @CreationTimestamp
     private LocalDateTime createdAt;
 
-    @Column(name = "updated_at", nullable = false)
+    @Column(name = "updated_at")
     @UpdateTimestamp
     private LocalDateTime updatedAt;
 }

@@ -1,5 +1,6 @@
 package fcj.dntu.vn.backend.models;
 
+import fcj.dntu.vn.backend.models.enums.DirectionEnum;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
@@ -10,7 +11,13 @@ import java.time.LocalDateTime;
 import java.util.UUID;
 
 @Entity
-@Table(name = "stops")
+@Table(name = "stops",
+        indexes = {
+                @Index(name = "idx_route_id", columnList = "route_id"),
+                @Index(name = "idx_direction", columnList = "direction"),
+                @Index(name = "idx_route_direction_sequence", columnList = "route_id, direction, sequence"),
+                @Index(name = "idx_location", columnList = "location", unique = false) // Spatial index (PostGIS)
+        })
 @Getter
 @Setter
 @AllArgsConstructor
@@ -27,10 +34,16 @@ public class StopModel {
     @Column(columnDefinition = "geometry(Point,4326)")
     private Point location;
 
-    @ManyToOne
-    private RouteModel route;
+    @Column(name = "sequence", nullable = false)
+    private Integer sequence; // Defines order in the route
 
-//    private Integer sequence;
+    @Enumerated(EnumType.STRING)
+    @Column(name="direction", nullable = false)
+    private DirectionEnum direction;
+
+    @ManyToOne
+    @JoinColumn(name="route_id", nullable=false)
+    private RouteModel route;
 
     @Column(name = "created_at", nullable = false, updatable = false)
     @CreationTimestamp
