@@ -1,0 +1,36 @@
+package fcj.dntu.vn.backend.dtos;
+
+import java.math.BigDecimal;
+import java.time.LocalTime;
+import java.util.List;
+import java.util.UUID;
+
+import lombok.Getter;
+import lombok.Setter;
+
+@Getter
+@Setter
+public class RouteDto {
+    private UUID id;
+    private String routeNumber;
+    private String routeName;
+    private LocalTime startTime;
+    private LocalTime endTime;
+    private Long routePrice;
+    private Integer intervalMinutes;
+    private BigDecimal lengthKm;
+    private List<BusDto> buses;
+
+    public RouteDto(UUID id, String routeNumber, String routeName, LocalTime startTime, LocalTime endTime,
+            Long routePrice, Integer intervalMinutes, BigDecimal lengthKm, List<BusDto> buses) {
+        this.id = id;
+        this.routeNumber = routeNumber;
+        this.routeName = routeName;
+        this.startTime = startTime;
+        this.endTime = endTime;
+        this.routePrice = routePrice;
+        this.intervalMinutes = intervalMinutes;
+        this.lengthKm = lengthKm;
+        this.buses = buses;
+    }
+}
