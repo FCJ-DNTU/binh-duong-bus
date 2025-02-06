@@ -11,4 +11,7 @@ exceptions
 │   │   GlobalExceptionHandler.java
 │   │   ...
 │   │
+│   responses
+|   |   ApiResponse.java
+|   |   ...
 ```
