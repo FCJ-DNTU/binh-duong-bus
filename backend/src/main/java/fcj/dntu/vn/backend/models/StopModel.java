@@ -28,21 +28,24 @@ public class StopModel {
     @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
 
-    @Column(name = "stop_name", nullable = false)
+    @Column(name="osm_node_id", unique = true, nullable = false)
+    private Long osmNodeId;
+
+    @Column(name = "stop_name")
     private String stopName;
 
     @Column(columnDefinition = "geometry(Point,4326)")
     private Point location;
 
-    @Column(name = "sequence", nullable = false)
+    @Column(name = "sequence")
     private Integer sequence; // Defines order in the route
 
     @Enumerated(EnumType.STRING)
-    @Column(name="direction", nullable = false)
+    @Column(name = "direction")
     private DirectionEnum direction;
 
     @ManyToOne
-    @JoinColumn(name="route_id", nullable=false)
+    @JoinColumn(name = "route_id", nullable = false)
     private RouteModel route;
 
     @Column(name = "created_at", nullable = false, updatable = false)
