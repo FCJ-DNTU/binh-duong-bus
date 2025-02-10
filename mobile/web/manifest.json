@@ -1,6 +1,6 @@
 {
-    "name": "mobile",
-    "short_name": "mobile",
+    "name": "binhduongbus",
+    "short_name": "binhduongbus",
     "start_url": ".",
     "display": "standalone",
     "background_color": "#0175C2",
