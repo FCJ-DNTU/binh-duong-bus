@@ -21,4 +21,7 @@ public interface StopRepository extends JpaRepository<StopModel, UUID> {
     List<StopModel> findByRouteIdAndDirection(UUID routeId, DirectionEnum direction);
 
     boolean existsByOsmNodeId(Long osmNodeId);
+
+    @Query(value = "SELECT * FROM stops WHERE ST_DWithin(location, ST_SetSRID(ST_MakePoint(?1, ?2), 4326), ?3)", nativeQuery = true)
+    List<StopModel> findStopNearby(double latitude, double longitude, int i);
 }

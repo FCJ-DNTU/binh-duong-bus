@@ -37,5 +37,4 @@ public class GeoUtils {
 
         return createPoint(latitude, longitude);
     }
-
 }

@@ -7,13 +7,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
-import fcj.dntu.vn.backend.dtos.BusDto;
-import fcj.dntu.vn.backend.dtos.RouteDto;
-import fcj.dntu.vn.backend.dtos.StopDto;
-import fcj.dntu.vn.backend.dtos.TimelineDto;
+import fcj.dntu.vn.backend.dtos.*;
 import fcj.dntu.vn.backend.exceptions.ErrorResponse;
 import fcj.dntu.vn.backend.exceptions.RouteNotFound;
 import fcj.dntu.vn.backend.exceptions.responses.ApiResponse;
@@ -37,41 +33,51 @@ public class RouteServiceImpl implements RouteService {
 
     @Override
     public ResponseEntity<ApiResponse<List<RouteDto>>> getAllRoutes() {
-        List<RouteModel> routes = routeRepository.findAll();
-        if (routes.isEmpty()) {
-            throw new RouteNotFound("Không có tuyến xe nào trong hệ thống");
-        }
+        try {
+            List<RouteModel> routes = routeRepository.findAll();
+            if (routes.isEmpty()) {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                        .body(new ApiResponse<>("Không có tuyến xe nào trong hệ thống", null));
+            }
 
-        List<RouteDto> routeDtos = routes.stream().map(route -> {
+            List<RouteDto> routeDtos = routes.stream().map(route -> {
+                List<BusDto> busDtos = route.getBuses().stream().map(bus -> new BusDto(
+                        bus.getId(),
+                        bus.getBusNumber(),
+                        GeoUtils.pointToLocation(bus.getLocation()))).toList();
+
+                return new RouteDto(route.getId(), route.getRouteNumber(), route.getRouteName(), route.getStartTime(),
+                        route.getEndTime(), route.getRoutePrice(), route.getIntervalMinutes(), route.getLengthKm(),
+                        busDtos);
+            }).toList();
+
+            return ResponseEntity.ok(new ApiResponse<>("Danh sách tuyến đường", routeDtos));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(new ApiResponse<>("Đã xảy ra lỗi: " + e.getMessage(), null));
+        }
+    }
+
+    @Override
+    public ResponseEntity<ApiResponse<RouteDto>> getRouteById(UUID id) {
+        try {
+            RouteModel route = routeRepository.findById(id)
+                    .orElseThrow(() -> new RuntimeException("Tuyến đường với ID " + id + " không tồn tại"));
+
             List<BusDto> busDtos = route.getBuses().stream().map(bus -> new BusDto(
                     bus.getId(),
                     bus.getBusNumber(),
                     GeoUtils.pointToLocation(bus.getLocation()))).toList();
 
-            return new RouteDto(route.getId(), route.getRouteNumber(), route.getRouteName(), route.getStartTime(),
-                    route.getEndTime(), route.getRoutePrice(), route.getIntervalMinutes(), route.getLengthKm(),
-                    busDtos);
-        }).toList();
+            RouteDto routeDto = new RouteDto(route.getId(), route.getRouteNumber(), route.getRouteName(),
+                    route.getStartTime(), route.getEndTime(), route.getRoutePrice(), route.getIntervalMinutes(),
+                    route.getLengthKm(), busDtos);
 
-        return ResponseEntity.ok(new ApiResponse<>("Danh sách tuyến đường", routeDtos));
-    }
-
-    @Override
-    public ResponseEntity<ApiResponse<RouteDto>> getRouteById(UUID id) {
-        RouteModel route = routeRepository.findById(id)
-                .orElseThrow(() -> new RouteNotFound("Tuyến đường với ID " + id + " không tồn tại"));
-
-        List<BusDto> busDtos = route.getBuses().stream().map(bus -> new BusDto(
-                bus.getId(),
-                bus.getBusNumber(),
-                GeoUtils.pointToLocation(bus.getLocation()))).toList();
-
-        RouteDto routeDto = new RouteDto(route.getId(), route.getRouteNumber(), route.getRouteName(),
-                route.getStartTime(),
-                route.getEndTime(), route.getRoutePrice(), route.getIntervalMinutes(), route.getLengthKm(),
-                busDtos);
-
-        return ResponseEntity.ok(new ApiResponse<>("Thông tin tuyến đường", routeDto));
+            return ResponseEntity.ok(new ApiResponse<>("Thông tin tuyến đường", routeDto));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(new ApiResponse<>("Đã xảy ra lỗi: " + e.getMessage(), null));
+        }
     }
 
     @Override
@@ -268,6 +274,34 @@ public class RouteServiceImpl implements RouteService {
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body(new ApiResponse<>("An unexpected error occurred", null));
+        }
+    }
+
+    @Override
+    public ResponseEntity<ApiResponse<List<RouteDto>>> getRouteByRouteName(String routeName) {
+        try {
+            List<RouteModel> routes = routeRepository.findByRouteName(routeName);
+
+            if (routes.isEmpty()) {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                        .body(new ApiResponse<>("Không tìm thấy tuyến đường có tên: " + routeName, List.of()));
+            }
+
+            List<RouteDto> routeDtos = routes.stream().map(route -> {
+                List<BusDto> busDtos = route.getBuses().stream().map(bus -> new BusDto(
+                        bus.getId(),
+                        bus.getBusNumber(),
+                        GeoUtils.pointToLocation(bus.getLocation()))).toList();
+
+                return new RouteDto(route.getId(), route.getRouteNumber(), route.getRouteName(), route.getStartTime(),
+                        route.getEndTime(), route.getRoutePrice(), route.getIntervalMinutes(), route.getLengthKm(),
+                        busDtos);
+            }).toList();
+
+            return ResponseEntity.ok(new ApiResponse<>("Danh sách tuyến đường", routeDtos));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(new ApiResponse<>("Lỗi khi tìm tuyến đường: " + e.getMessage(), null));
         }
     }
 }

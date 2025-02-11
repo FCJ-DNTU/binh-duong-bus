@@ -26,4 +26,6 @@ public interface RouteService {
     ResponseEntity<ApiResponse<List<StopDto>>> getRouteStops(UUID routeId, String direction);
 
     ResponseEntity<ApiResponse<List<TimelineDto>>> getRouteTimelines(UUID routeId, String direction);
+
+    ResponseEntity<ApiResponse<List<RouteDto>>> getRouteByRouteName(String routeName);
 }
