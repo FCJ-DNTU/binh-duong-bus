@@ -19,4 +19,6 @@ public interface StopRepository extends JpaRepository<StopModel, UUID> {
     List<StopModel> findByRouteId(UUID routeId);
 
     List<StopModel> findByRouteIdAndDirection(UUID routeId, DirectionEnum direction);
+
+    boolean existsByOsmNodeId(Long osmNodeId);
 }
