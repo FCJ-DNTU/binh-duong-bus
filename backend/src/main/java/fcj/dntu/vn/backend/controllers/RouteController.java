@@ -13,6 +13,8 @@ import fcj.dntu.vn.backend.dtos.TimelineDto;
 import fcj.dntu.vn.backend.exceptions.responses.ApiResponse;
 import fcj.dntu.vn.backend.models.*;
 import fcj.dntu.vn.backend.services.RouteService;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 
 @RestController
 @RequestMapping("/api/routes")
@@ -29,6 +31,11 @@ public class RouteController {
     @GetMapping("/{id}")
     public ResponseEntity<ApiResponse<RouteDto>> getRouteById(@PathVariable UUID id) {
         return routeService.getRouteById(id);
+    }
+
+    @GetMapping("/search")
+    public ResponseEntity<ApiResponse<List<RouteDto>>> getRouteByName(@RequestParam("name") String routeName) {
+        return routeService.getRouteByRouteName(routeName);
     }
 
     @GetMapping("/{routeId}/stops")

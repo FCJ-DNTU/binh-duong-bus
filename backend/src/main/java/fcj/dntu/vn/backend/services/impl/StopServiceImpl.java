@@ -11,6 +11,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
+import fcj.dntu.vn.backend.dtos.LocationDto;
 import fcj.dntu.vn.backend.dtos.StopDto;
 import fcj.dntu.vn.backend.exceptions.ErrorResponse;
 
@@ -34,38 +35,48 @@ public class StopServiceImpl implements StopService {
 
     @Override
     public ResponseEntity<ApiResponse<List<StopDto>>> getAllStops() {
-        List<StopModel> stops = stopRepository.findAll();
-        if (stops.isEmpty()) {
-            throw new RouteNotFound("Không có trạm dừng nào trong hệ thống");
+        try {
+            List<StopModel> stops = stopRepository.findAll();
+            if (stops.isEmpty()) {
+                throw new RouteNotFound("Không có trạm dừng nào trong hệ thống");
+            }
+
+            // transfer StopModel to StopDTO
+            List<StopDto> stopDtos = stops.stream().map(stop -> new StopDto(
+                    stop.getId(),
+                    stop.getStopName(),
+                    GeoUtils.pointToLocation(stop.getLocation()),
+                    stop.getSequence(),
+                    stop.getDirection(),
+                    stop.getRoute().getId()))
+                    .collect(Collectors.toList());
+
+            return ResponseEntity.ok(new ApiResponse<>("Danh sách trạm dừng", stopDtos));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(new ApiResponse<>("Đã xảy ra lỗi: " + e.getMessage(), null));
         }
-
-        // transfer StopModel to StopDTO
-        List<StopDto> stopDtos = stops.stream().map(stop -> new StopDto(
-                stop.getId(),
-                stop.getStopName(),
-                GeoUtils.pointToLocation(stop.getLocation()),
-                stop.getSequence(),
-                stop.getDirection(),
-                stop.getRoute().getId()))
-                .collect(Collectors.toList());
-
-        return ResponseEntity.ok(new ApiResponse<>("Danh sách trạm dừng", stopDtos));
     }
 
     @Override
     public ResponseEntity<ApiResponse<StopDto>> getStopById(UUID id) {
-        StopModel stop = stopRepository.findById(id)
-                .orElseThrow(() -> new RouteNotFound("Trạm dừng với ID " + id + " không tồn tại"));
+        try {
+            StopModel stop = stopRepository.findById(id)
+                    .orElseThrow(() -> new RouteNotFound("Trạm dừng với ID " + id + " không tồn tại"));
 
-        StopDto stopDto = new StopDto(
-                stop.getId(),
-                stop.getStopName(),
-                GeoUtils.pointToLocation(stop.getLocation()),
-                stop.getSequence(),
-                stop.getDirection(),
-                stop.getRoute().getId());
+            StopDto stopDto = new StopDto(
+                    stop.getId(),
+                    stop.getStopName(),
+                    GeoUtils.pointToLocation(stop.getLocation()),
+                    stop.getSequence(),
+                    stop.getDirection(),
+                    stop.getRoute().getId());
 
-        return ResponseEntity.ok(new ApiResponse<>("Thông tin trạm dừng", stopDto));
+            return ResponseEntity.ok(new ApiResponse<>("Thông tin trạm dừng", stopDto));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(new ApiResponse<>("Đã xảy ra lỗi: " + e.getMessage(), null));
+        }
     }
 
     @Override
@@ -155,6 +166,32 @@ public class StopServiceImpl implements StopService {
                     "Lỗi khi xóa trạm dừng: " + e.getMessage(),
                     path);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errorResponse);
+        }
+    }
+
+    @Override
+    public ResponseEntity<ApiResponse<List<StopDto>>> findNearbyStops(double latitude, double longitude) {
+        try {
+            List<StopModel> nearbyStops = stopRepository.findStopNearby(latitude, longitude, 500);
+
+            if (nearbyStops.isEmpty()) {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                        .body(new ApiResponse<>("Không tìm thấy điểm dừng nào trong phạm vi 500m", List.of()));
+            }
+
+            List<StopDto> stopDtos = nearbyStops.stream().map(stop -> new StopDto(
+                    stop.getId(),
+                    stop.getStopName(),
+                    new LocationDto(stop.getLocation().getY(), stop.getLocation().getX()), // lat, lng
+                    stop.getSequence(),
+                    stop.getDirection(),
+                    stop.getRoute().getId())).collect(Collectors.toList());
+
+            return ResponseEntity.ok(new ApiResponse<>("Danh sách điểm dừng gần bạn", stopDtos));
+
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(new ApiResponse<>("Lỗi khi tìm điểm dừng: " + e.getMessage(), List.of()));
         }
     }
 
