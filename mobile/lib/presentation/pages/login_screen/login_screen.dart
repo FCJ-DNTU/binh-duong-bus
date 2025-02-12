@@ -1,3 +1,4 @@
+import 'package:binhduongbus/core/config/app_routes.dart';
 import 'package:flutter/material.dart';
 
 class LoginScreen extends StatelessWidget {
@@ -12,7 +13,7 @@ class LoginScreen extends StatelessWidget {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            // Logo
+   
             ClipRRect(
               borderRadius: BorderRadius.circular(15),
               child: Image.asset(
@@ -24,7 +25,7 @@ class LoginScreen extends StatelessWidget {
             ),
             const SizedBox(height: 40),
 
-            // Tiêu đề "Đăng Nhập"
+          
             const Text(
               'Đăng Nhập',
               style: TextStyle(
@@ -64,10 +65,10 @@ class LoginScreen extends StatelessWidget {
             ),
             const SizedBox(height: 50),
 
-            // Đăng Nhập Button
+       
             ElevatedButton(
               onPressed: () {
-                // Xử lý logic khi đăng nhập
+                Navigator.pushNamed(context, AppRoutes.home);
               },
               style: ElevatedButton.styleFrom(
                 shape: RoundedRectangleBorder(
@@ -95,7 +96,7 @@ class LoginScreen extends StatelessWidget {
                   ),
                 ),
                 SizedBox(width: 10),
-                // Biểu tượng Google
+            
                 GestureDetector(
                   onTap: () {
                     // Đăng nhập bằng Google
@@ -107,7 +108,7 @@ class LoginScreen extends StatelessWidget {
                   ),
                 ),
                 const SizedBox(width: 13),
-                // Biểu tượng Facebook
+            
                 GestureDetector(
                   onTap: () {
                     // Đăng nhập bằng Facebook

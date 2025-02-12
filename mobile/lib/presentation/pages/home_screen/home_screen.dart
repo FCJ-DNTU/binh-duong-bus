@@ -1,8 +1,18 @@
+import 'package:binhduongbus/presentation/pages/route_details_screen/route_details_screen.dart';
+import 'package:binhduongbus/presentation/pages/route_planning_screen/route_planning_screen.dart';
+import 'package:binhduongbus/presentation/pages/setting_screen/setting_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:binhduongbus/core/config/app_theme.dart';
 
-class RouteSearchScreen extends StatelessWidget {
+class RouteSearchScreen extends StatefulWidget {
   const RouteSearchScreen({Key? key}) : super(key: key);
+
+  @override
+  _RouteSearchScreenState createState() => _RouteSearchScreenState();
+}
+
+class _RouteSearchScreenState extends State<RouteSearchScreen> {
+  int _selectedTabIndex = 0;
 
   @override
   Widget build(BuildContext context) {
@@ -32,7 +42,12 @@ class RouteSearchScreen extends StatelessWidget {
                 size: 30.0,
               ),
               onPressed: () {
-                // Add menu
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => const SettingScreen(),
+                  ),
+                );
               },
             ),
           ],
@@ -40,8 +55,13 @@ class RouteSearchScreen extends StatelessWidget {
             preferredSize: const Size.fromHeight(50.0),
             child: Container(
               color: Colors.white,
-              child: const TabBar(
-                tabs: [
+              child: TabBar(
+                onTap: (index) {
+                  setState(() {
+                    _selectedTabIndex = index;
+                  });
+                },
+                tabs: const [
                   Tab(
                     child: Row(
                       mainAxisSize: MainAxisSize.min,
@@ -76,28 +96,22 @@ class RouteSearchScreen extends StatelessWidget {
           padding: const EdgeInsets.all(16.0),
           child: Column(
             children: [
-              // Search input
-              TextField(
-                decoration: InputDecoration(
-                  hintText: 'Tìm tuyến xe',
-                  prefixIcon: const Icon(Icons.search),
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(15.0),
+              if (_selectedTabIndex == 0)
+                TextField(
+                  decoration: InputDecoration(
+                    hintText: 'Tìm tuyến xe',
+                    prefixIcon: const Icon(Icons.search),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(15.0),
+                    ),
                   ),
                 ),
-              ),
               const SizedBox(height: 16),
-              // TabBarView
               const Expanded(
                 child: TabBarView(
                   children: [
-                    // Content for "TRA CỨU" tab (search routes)
                     RouteList(),
-
-                    // Content for "TÌM ĐƯỜNG" tab (route planning)
-                    Center(
-                      child: Text('Tìm Đường Content'),
-                    ),
+                    RoutePlanningScreen(),
                   ],
                 ),
               ),
@@ -115,7 +129,7 @@ class RouteList extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return ListView(
-      children: [
+      children: const [
         RouteCard(
           title: 'Tuyến D1',
           routeDetails: 'KCN Mỹ Phước - Bến xe Lam Hồng',
@@ -133,24 +147,6 @@ class RouteList extends StatelessWidget {
           routeDetails: 'Khu du lịch Đại Nam - Bến xe Miền Tây',
           time: '09:25 - 16:57',
           price: '15.000 VND',
-        ),
-        RouteCard(
-          title: 'Tuyến D4',
-          routeDetails: 'Thủ Dầu Một - Hội Nghĩa',
-          time: '09:25 - 16:57',
-          price: '20.000 VND',
-        ),
-        RouteCard(
-          title: 'Tuyến D5',
-          routeDetails: 'Bình Mỹ - Bến xe Bình Dương',
-          time: '09:25 - 16:57',
-          price: '15.000 VND',
-        ),
-        RouteCard(
-          title: 'Tuyến D6',
-          routeDetails: 'Toà nhà Becamex Tower - VSIP 2',
-          time: '09:25 - 16:57',
-          price: '10.000 VND',
         ),
       ],
     );
@@ -175,17 +171,17 @@ class RouteCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return Card(
       margin: const EdgeInsets.symmetric(vertical: 8.0),
-      color: Color(0xFFEBF0F5),
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(15),
       ),
+      color: const Color(0xFFEBF0F5),
       elevation: 4.0,
       child: ListTile(
         contentPadding: const EdgeInsets.all(16.0),
         leading: const Icon(
           Icons.directions_bus,
           size: 40,
-          color: Color.fromARGB(255, 108, 174, 202),
+          color: Colors.blueAccent,
         ),
         title: Text(
           title,
@@ -197,50 +193,37 @@ class RouteCard extends StatelessWidget {
         subtitle: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(
-              routeDetails,
-              style: TextStyle(fontWeight: FontWeight.bold),
-            ),
+            Text(routeDetails,
+                style: const TextStyle(fontWeight: FontWeight.bold)),
             const SizedBox(height: 8.0),
             Row(
-              mainAxisAlignment:
-                  MainAxisAlignment.spaceBetween, // Căn hai phần cách đều
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Row(
                   children: [
-                    const Icon(
-                      Icons.access_time,
-                      size: 20,
-                    ),
+                    const Icon(Icons.access_time, size: 20),
                     const SizedBox(width: 8.0),
-                    Text(
-                      '$time',
-                      style: const TextStyle(
-                        fontSize: 16,
-                        color: Colors.black,
-                      ),
-                    ),
+                    Text(time),
                   ],
                 ),
                 Row(
                   children: [
-                    const Icon(
-                      Icons.attach_money,
-                      size: 20,
-                    ),
-                    Text(
-                      '$price',
-                      style: const TextStyle(
-                        fontSize: 16,
-                        color: Colors.black,
-                      ),
-                    ),
+                    const Icon(Icons.attach_money, size: 20),
+                    Text(price),
                   ],
                 ),
               ],
             )
           ],
         ),
+        onTap: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => RouteDetailScreen(title: title),
+            ),
+          );
+        },
       ),
     );
   }
