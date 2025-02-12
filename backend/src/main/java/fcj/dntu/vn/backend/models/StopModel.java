@@ -13,10 +13,8 @@ import java.util.UUID;
 @Entity
 @Table(name = "stops",
         indexes = {
-                @Index(name = "idx_route_id", columnList = "route_id"),
                 @Index(name = "idx_direction", columnList = "direction"),
                 @Index(name = "idx_route_direction_sequence", columnList = "route_id, direction, sequence"),
-                @Index(name = "idx_location", columnList = "location", unique = false) // Spatial index (PostGIS)
         })
 @Getter
 @Setter
