@@ -22,6 +22,9 @@ public interface StopRepository extends JpaRepository<StopModel, UUID> {
 
     boolean existsByOsmNodeId(Long osmNodeId);
 
-    @Query(value = "SELECT * FROM stops WHERE ST_DWithin(location, ST_SetSRID(ST_MakePoint(?1, ?2), 4326), ?3)", nativeQuery = true)
-    List<StopModel> findStopNearby(double latitude, double longitude, int i);
+    @Query(value = """
+                SELECT * FROM stops
+                WHERE ST_DistanceSphere(location, ST_SetSRID(ST_MakePoint(?2, ?1), 4326)) <= ?3
+            """, nativeQuery = true)
+    List<StopModel> findStopNearby(double longitude, double latitude, int i);
 }

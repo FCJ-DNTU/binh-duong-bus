@@ -37,7 +37,8 @@ public class RouteServiceImpl implements RouteService {
                 }
 
                 List<RouteDto> routeDtos = routes.stream().map(route -> new RouteDto(
-                                route.getId(), route.getRouteNumber(), route.getRouteName(), route.getStartTime(),
+                                route.getId(), route.getOsmRelationId(), route.getRouteNumber(), route.getRouteName(),
+                                route.getStartTime(),
                                 route.getEndTime(), route.getRoutePrice(), route.getIntervalMinutes(),
                                 route.getLengthKm(),
                                 route.getBuses().stream().map(bus -> new BusDto(
@@ -59,7 +60,8 @@ public class RouteServiceImpl implements RouteService {
                                 bus.getBusNumber(),
                                 GeoUtils.pointToLocation(bus.getLocation()))).toList();
 
-                RouteDto routeDto = new RouteDto(route.getId(), route.getRouteNumber(), route.getRouteName(),
+                RouteDto routeDto = new RouteDto(route.getId(), route.getOsmRelationId(), route.getRouteNumber(),
+                                route.getRouteName(),
                                 route.getStartTime(), route.getEndTime(), route.getRoutePrice(),
                                 route.getIntervalMinutes(),
                                 route.getLengthKm(), busDtos);
@@ -78,7 +80,8 @@ public class RouteServiceImpl implements RouteService {
                                                 GeoUtils.pointToLocation(bus.getLocation()))).toList()
                                 : List.of();
 
-                RouteDto responseDto = new RouteDto(savedRoute.getId(), savedRoute.getRouteNumber(),
+                RouteDto responseDto = new RouteDto(savedRoute.getId(), savedRoute.getOsmRelationId(),
+                                savedRoute.getRouteNumber(),
                                 savedRoute.getRouteName(),
                                 savedRoute.getStartTime(), savedRoute.getEndTime(), savedRoute.getRoutePrice(),
                                 savedRoute.getIntervalMinutes(), savedRoute.getLengthKm(), busDtos);
@@ -122,7 +125,8 @@ public class RouteServiceImpl implements RouteService {
                                 bus.getBusNumber(),
                                 GeoUtils.pointToLocation(bus.getLocation()))).toList();
 
-                RouteDto responseDto = new RouteDto(savedRoute.getId(), savedRoute.getRouteNumber(),
+                RouteDto responseDto = new RouteDto(savedRoute.getId(), savedRoute.getOsmRelationId(),
+                                savedRoute.getRouteNumber(),
                                 savedRoute.getRouteName(),
                                 savedRoute.getStartTime(), savedRoute.getEndTime(), savedRoute.getRoutePrice(),
                                 savedRoute.getIntervalMinutes(), savedRoute.getLengthKm(), busDtos);
@@ -201,6 +205,7 @@ public class RouteServiceImpl implements RouteService {
                                 .map(timeLine -> {
                                         RouteDto routeDto = new RouteDto(
                                                         timeLine.getRoute().getId(),
+                                                        timeLine.getRoute().getOsmRelationId(),
                                                         timeLine.getRoute().getRouteNumber(),
                                                         timeLine.getRoute().getRouteName(),
                                                         timeLine.getRoute().getStartTime(),
@@ -242,7 +247,8 @@ public class RouteServiceImpl implements RouteService {
                                         bus.getBusNumber(),
                                         GeoUtils.pointToLocation(bus.getLocation()))).toList();
 
-                        return new RouteDto(route.getId(), route.getRouteNumber(), route.getRouteName(),
+                        return new RouteDto(route.getId(), route.getOsmRelationId(), route.getRouteNumber(),
+                                        route.getRouteName(),
                                         route.getStartTime(),
                                         route.getEndTime(), route.getRoutePrice(), route.getIntervalMinutes(),
                                         route.getLengthKm(),

@@ -12,6 +12,7 @@ import lombok.Setter;
 @Setter
 public class RouteDto {
     private UUID id;
+    private Long osmRelationId;
     private String routeNumber;
     private String routeName;
     private LocalTime startTime;
@@ -21,9 +22,11 @@ public class RouteDto {
     private BigDecimal lengthKm;
     private List<BusDto> buses;
 
-    public RouteDto(UUID id, String routeNumber, String routeName, LocalTime startTime, LocalTime endTime,
+    public RouteDto(UUID id, Long osmRelationId, String routeNumber, String routeName, LocalTime startTime,
+            LocalTime endTime,
             Long routePrice, Integer intervalMinutes, BigDecimal lengthKm, List<BusDto> buses) {
         this.id = id;
+        this.osmRelationId = osmRelationId;
         this.routeNumber = routeNumber;
         this.routeName = routeName;
         this.startTime = startTime;
