@@ -1,9 +1,13 @@
-import 'package:binhduongbus/presentation/pages/login/login_screen.dart';
+import 'package:binhduongbus/presentation/pages/login_screen/login_screen.dart';
+import 'package:binhduongbus/presentation/pages/route_details_screen/route_details_screen.dart';
+import 'package:binhduongbus/presentation/pages/route_planning_screen/route_planning_screen.dart';
 import 'package:binhduongbus/presentation/pages/splash_screen/splash_screen.dart';
+import 'package:binhduongbus/presentation/pages/home_screen/home_screen.dart';
+import 'package:binhduongbus/presentation/pages/notification_screen/notification_screen.dart';
+import 'package:binhduongbus/presentation/pages/route_details_screen/route_details_screen.dart';
 import 'package:flutter/material.dart';
 import 'core/config/app_routes.dart';
 import 'core/config/app_theme.dart';
-import 'presentation/pages/home/home_screen.dart';
 
 void main() {
   runApp(const MyApp());
@@ -23,6 +27,9 @@ class MyApp extends StatelessWidget {
         AppRoutes.splash: (context) => const SplashScreen(),
         AppRoutes.login: (context) => const LoginScreen(),
         AppRoutes.home: (context) => const RouteSearchScreen(),
+        AppRoutes.notification: (context) => const NotificationScreen(),
+        AppRoutes.routeDetails: (context) => const RouteDetailScreen(title: ''),
+        AppRoutes.routePlanning: (context) => const RoutePlanningScreen(),
       },
     );
   }
