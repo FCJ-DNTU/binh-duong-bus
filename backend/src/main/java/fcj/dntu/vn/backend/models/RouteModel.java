@@ -27,7 +27,7 @@ public class RouteModel {
     @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
 
-    @Column(name = "osm_relation_id", nullable = false, unique = true)
+    @Column(name = "osm_relation_id", nullable = false)
     private Long osmRelationId;
 
     @Column(name = "route_number", length = 20)

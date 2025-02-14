@@ -22,7 +22,7 @@ public class WayModel {
     @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
 
-    @Column(name="osm_way_id", nullable=false, unique=true)
+    @Column(name="osm_way_id", nullable=false)
     private Long osmWayId;
 
     private String name;

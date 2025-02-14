@@ -26,7 +26,7 @@ public class StopModel {
     @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
 
-    @Column(name="osm_node_id", unique = true, nullable = false)
+    @Column(name="osm_node_id", nullable = false)
     private Long osmNodeId;
 
     @Column(name = "stop_name")
