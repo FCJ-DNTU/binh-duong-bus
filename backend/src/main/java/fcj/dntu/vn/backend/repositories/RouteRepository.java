@@ -12,4 +12,5 @@ public interface RouteRepository extends JpaRepository<RouteModel, UUID> {
 
     List<RouteModel> findByRouteName(String routeName);
 
+    boolean existsByOsmRelationId(Long osmRelationId);
 }
