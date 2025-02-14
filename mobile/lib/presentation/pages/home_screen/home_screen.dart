@@ -1,7 +1,9 @@
+import 'package:flutter/material.dart';
+import 'package:binhduongbus/data/sources/remote/bus_api.dart';
+import 'package:binhduongbus/data/models/bus_route_model.dart';
 import 'package:binhduongbus/presentation/pages/route_details_screen/route_details_screen.dart';
 import 'package:binhduongbus/presentation/pages/route_planning_screen/route_planning_screen.dart';
 import 'package:binhduongbus/presentation/pages/setting_screen/setting_screen.dart';
-import 'package:flutter/material.dart';
 import 'package:binhduongbus/core/config/app_theme.dart';
 
 class RouteSearchScreen extends StatefulWidget {
@@ -76,10 +78,7 @@ class _RouteSearchScreenState extends State<RouteSearchScreen> {
                     child: Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        Icon(
-                          Icons.map,
-                          size: 20,
-                        ),
+                        Icon(Icons.map, size: 20),
                         SizedBox(width: 8.0),
                         Text('TÌM ĐƯỜNG'),
                       ],
@@ -107,7 +106,7 @@ class _RouteSearchScreenState extends State<RouteSearchScreen> {
                   ),
                 ),
               const SizedBox(height: 16),
-              const Expanded(
+              Expanded(
                 child: TabBarView(
                   children: [
                     RouteList(),
@@ -128,27 +127,30 @@ class RouteList extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return ListView(
-      children: const [
-        RouteCard(
-          title: 'Tuyến D1',
-          routeDetails: 'KCN Mỹ Phước - Bến xe Lam Hồng',
-          time: '09:25 - 16:57',
-          price: '10.000 VND',
-        ),
-        RouteCard(
-          title: 'Tuyến D2',
-          routeDetails: 'Bình Mỹ (Củ Chi) - Thủ Dầu Một',
-          time: '09:25 - 16:57',
-          price: '6.000 VND',
-        ),
-        RouteCard(
-          title: 'Tuyến D3',
-          routeDetails: 'Khu du lịch Đại Nam - Bến xe Miền Tây',
-          time: '09:25 - 16:57',
-          price: '15.000 VND',
-        ),
-      ],
+    return FutureBuilder<List<BusRoute>>(
+      future: BusApi().getBusRoutes(),
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return const Center(child: CircularProgressIndicator());
+        } else if (snapshot.hasError) {
+          return Center(child: Text('Lỗi: ${snapshot.error}'));
+        } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
+          return const Center(child: Text('Không có dữ liệu tuyến xe'));
+        } else {
+          List<BusRoute> routes = snapshot.data!;
+          return ListView.builder(
+            itemCount: routes.length,
+            itemBuilder: (context, index) {
+              return RouteCard(
+                routeDetails: 'Tuyến ${routes[index].routeNumber}',
+                title: routes[index].routeName,
+                time: '${routes[index].startTime} - ${routes[index].endTime}',
+                price: '${routes[index].routePrice} VND',
+              );
+            },
+          );
+        }
+      },
     );
   }
 }
@@ -161,8 +163,8 @@ class RouteCard extends StatelessWidget {
 
   const RouteCard({
     Key? key,
-    required this.title,
     required this.routeDetails,
+    required this.title,
     required this.time,
     required this.price,
   }) : super(key: key);
@@ -170,32 +172,33 @@ class RouteCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Card(
-      margin: const EdgeInsets.symmetric(vertical: 8.0),
+      margin: const EdgeInsets.symmetric(vertical: 7.0),
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(15),
       ),
       color: const Color(0xFFEBF0F5),
       elevation: 4.0,
       child: ListTile(
-        contentPadding: const EdgeInsets.all(16.0),
+        contentPadding: const EdgeInsets.all(7.0),
         leading: const Icon(
           Icons.directions_bus,
           size: 40,
-          color: Colors.blueAccent,
+          color: Color(0xFF2882E2),
         ),
         title: Text(
           title,
           style: const TextStyle(
               fontSize: 16.0,
               fontWeight: FontWeight.bold,
-              color: Colors.blueAccent),
+              color: Color(0xFF2882E2)),
         ),
         subtitle: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            const SizedBox(height: 4.0),
             Text(routeDetails,
                 style: const TextStyle(fontWeight: FontWeight.bold)),
-            const SizedBox(height: 8.0),
+            const SizedBox(height: 6.0),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [

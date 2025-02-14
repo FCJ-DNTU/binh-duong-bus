@@ -37,7 +37,7 @@ dependencies:
   http: ^1.0.0
   dio: ^5.1.0
   shared_preferences: ^2.1.0
-  flutter_map: ^5.0.0
+  flutter_map: ^8.0.0
   image_picker: ^1.0.0
   lottie: ^2.0.0
   intl: ^0.18.0
