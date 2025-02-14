@@ -1,14 +1,14 @@
 import 'package:flutter/material.dart';
 
 class AppTheme {
-  static const Color primaryColor = Color(0xFF0066FF); // Màu chính
-  static const Color secondaryColor = Color(0xFF00CCFF); // Màu phụ
+  static const Color primaryColor = Color(0xFF0066FF);
+  static const Color secondaryColor = Color(0xFF00CCFF);
 
   static ThemeData lightTheme = ThemeData(
     primaryColor: primaryColor,
     scaffoldBackgroundColor: Colors.white,
     textTheme: const TextTheme(
-      bodyLarge: TextStyle(color: Colors.black), 
+      bodyLarge: TextStyle(color: Colors.black),
       bodyMedium: TextStyle(color: Colors.black87),
     ),
   );
@@ -17,8 +17,8 @@ class AppTheme {
     primaryColor: primaryColor,
     scaffoldBackgroundColor: Colors.black,
     textTheme: const TextTheme(
-      bodyLarge: TextStyle(color: Colors.white), 
-      bodyMedium: TextStyle(color: Colors.white70), 
+      bodyLarge: TextStyle(color: Colors.white),
+      bodyMedium: TextStyle(color: Colors.white70),
     ),
   );
 }
