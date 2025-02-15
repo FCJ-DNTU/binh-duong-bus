@@ -1,5 +1,6 @@
 package fcj.dntu.vn.backend.exceptions.handlers;
 
+import org.apache.coyote.BadRequestException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
@@ -36,6 +37,14 @@ public class GlobalExceptionHandler {
     }
 
     // bad request exceptions
+    @ExceptionHandler({ BadRequestException.class })
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public ErrorResponse handleBadRequest(BadRequestException e, HttpServletRequest req) {
+        return new ErrorResponse(
+                HttpStatus.BAD_REQUEST,
+                e.getMessage(),
+                req.getRequestURL().toString());
+    }
 
     /**
      * Handles unknown exceptions and returns a standardized error response.
@@ -48,7 +57,7 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(Exception.class)
     @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
     public ErrorResponse handleUnknownException(Exception e, HttpServletRequest req) {
-//        logger.error("Exception caught: ", e)
+        // logger.error("Exception caught: ", e)
         return new ErrorResponse(
                 HttpStatus.INTERNAL_SERVER_ERROR,
                 "An unexpected error occurred",
