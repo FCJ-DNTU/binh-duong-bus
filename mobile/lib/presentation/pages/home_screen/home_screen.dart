@@ -15,6 +15,39 @@ class RouteSearchScreen extends StatefulWidget {
 
 class _RouteSearchScreenState extends State<RouteSearchScreen> {
   int _selectedTabIndex = 0;
+  List<BusRoute> _allRoutes = [];
+  List<BusRoute> _filteredRoutes = [];
+  TextEditingController _searchController = TextEditingController();
+
+  @override
+  void initState() {
+    super.initState();
+    _loadBusRoutes();
+    _searchController.addListener(_onSearchChanged);
+  }
+
+  Future<void> _loadBusRoutes() async {
+    try {
+      List<BusRoute> routes = await BusApi().getBusRoutes();
+      setState(() {
+        _allRoutes = routes;
+        _filteredRoutes = routes;
+      });
+    } catch (e) {
+      print('Lỗi khi tải tuyến xe: $e');
+    }
+  }
+
+  void _onSearchChanged() {
+    String query = _searchController.text.toLowerCase();
+    setState(() {
+      _filteredRoutes = _allRoutes
+          .where((route) =>
+              route.routeName.toLowerCase().contains(query) ||
+              route.routeNumber.toLowerCase().contains(query))
+          .toList();
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -31,24 +64,16 @@ class _RouteSearchScreenState extends State<RouteSearchScreen> {
           ),
           title: const Text(
             'Bình Dương Bus',
-            style: TextStyle(
-              fontSize: 20,
-              color: Colors.white,
-            ),
+            style: TextStyle(fontSize: 20, color: Colors.white),
           ),
           actions: [
             IconButton(
-              icon: const Icon(
-                Icons.menu,
-                color: Colors.white,
-                size: 30.0,
-              ),
+              icon: const Icon(Icons.menu, color: Colors.white, size: 30.0),
               onPressed: () {
                 Navigator.push(
                   context,
                   MaterialPageRoute(
-                    builder: (context) => const SettingScreen(),
-                  ),
+                      builder: (context) => const SettingScreen()),
                 );
               },
             ),
@@ -97,8 +122,9 @@ class _RouteSearchScreenState extends State<RouteSearchScreen> {
             children: [
               if (_selectedTabIndex == 0)
                 TextField(
+                  controller: _searchController,
                   decoration: InputDecoration(
-                    hintText: 'Tìm tuyến xe',
+                    hintText: 'Nhập tuyến đường cần tìm',
                     prefixIcon: const Icon(Icons.search),
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(15.0),
@@ -109,7 +135,7 @@ class _RouteSearchScreenState extends State<RouteSearchScreen> {
               Expanded(
                 child: TabBarView(
                   children: [
-                    RouteList(),
+                    RouteList(filteredRoutes: _filteredRoutes),
                     RoutePlanningScreen(),
                   ],
                 ),
@@ -120,36 +146,37 @@ class _RouteSearchScreenState extends State<RouteSearchScreen> {
       ),
     );
   }
+
+  @override
+  void dispose() {
+    _searchController.removeListener(_onSearchChanged);
+    _searchController.dispose();
+    super.dispose();
+  }
 }
 
 class RouteList extends StatelessWidget {
-  const RouteList({Key? key}) : super(key: key);
+  final List<BusRoute> filteredRoutes;
+
+  const RouteList({Key? key, required this.filteredRoutes}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
-    return FutureBuilder<List<BusRoute>>(
-      future: BusApi().getBusRoutes(),
-      builder: (context, snapshot) {
-        if (snapshot.connectionState == ConnectionState.waiting) {
-          return const Center(child: CircularProgressIndicator());
-        } else if (snapshot.hasError) {
-          return Center(child: Text('Lỗi: ${snapshot.error}'));
-        } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
-          return const Center(child: Text('Không có dữ liệu tuyến xe'));
-        } else {
-          List<BusRoute> routes = snapshot.data!;
-          return ListView.builder(
-            itemCount: routes.length,
-            itemBuilder: (context, index) {
-              return RouteCard(
-                routeDetails: 'Tuyến ${routes[index].routeNumber}',
-                title: routes[index].routeName,
-                time: '${routes[index].startTime} - ${routes[index].endTime}',
-                price: '${routes[index].routePrice} VND',
-              );
-            },
-          );
-        }
+    if (filteredRoutes.isEmpty) {
+      return const Center(child: Text('Không có tuyến đường nào phù hợp'));
+    }
+
+    return ListView.builder(
+      itemCount: filteredRoutes.length,
+      itemBuilder: (context, index) {
+        return RouteCard(
+          routeDetails: 'Tuyến ${filteredRoutes[index].routeNumber}',
+          title: filteredRoutes[index].routeName,
+          time:
+              '${filteredRoutes[index].startTime} - ${filteredRoutes[index].endTime}',
+          price: '${filteredRoutes[index].routePrice} VND',
+          routeId: filteredRoutes[index].id,
+        );
       },
     );
   }
@@ -160,6 +187,7 @@ class RouteCard extends StatelessWidget {
   final String routeDetails;
   final String time;
   final String price;
+  final String routeId;
 
   const RouteCard({
     Key? key,
@@ -167,6 +195,7 @@ class RouteCard extends StatelessWidget {
     required this.title,
     required this.time,
     required this.price,
+    required this.routeId,
   }) : super(key: key);
 
   @override
@@ -180,11 +209,8 @@ class RouteCard extends StatelessWidget {
       elevation: 4.0,
       child: ListTile(
         contentPadding: const EdgeInsets.all(7.0),
-        leading: const Icon(
-          Icons.directions_bus,
-          size: 40,
-          color: Color(0xFF2882E2),
-        ),
+        leading: const Icon(Icons.directions_bus,
+            size: 40, color: Color(0xFF2882E2)),
         title: Text(
           title,
           style: const TextStyle(
@@ -206,24 +232,27 @@ class RouteCard extends StatelessWidget {
                   children: [
                     const Icon(Icons.access_time, size: 20),
                     const SizedBox(width: 8.0),
-                    Text(time),
+                    Text(time)
                   ],
                 ),
                 Row(
                   children: [
                     const Icon(Icons.attach_money, size: 20),
-                    Text(price),
+                    Text(price)
                   ],
                 ),
               ],
             )
           ],
         ),
-        onTap: () {
+        onTap: () async {
+          List<TimeLine> timelines =
+              await BusApi().getTimelinesForRoute(routeId);
           Navigator.push(
             context,
             MaterialPageRoute(
-              builder: (context) => RouteDetailScreen(title: title),
+              builder: (context) => RouteDetailScreen(
+                  routeId: routeId, title: title, timelines: timelines),
             ),
           );
         },
