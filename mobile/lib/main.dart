@@ -28,9 +28,11 @@ class MyApp extends StatelessWidget {
         AppRoutes.login: (context) => const LoginScreen(),
         AppRoutes.home: (context) => const RouteSearchScreen(),
         AppRoutes.notification: (context) => const NotificationScreen(),
-        AppRoutes.routeDetails: (context) => const RouteDetailScreen(title: ''),
+        // AppRoutes.routeDetails: (context) => const RouteDetailScreen(title: ''),
         AppRoutes.routePlanning: (context) => const RoutePlanningScreen(),
       },
     );
   }
+
+  
 }

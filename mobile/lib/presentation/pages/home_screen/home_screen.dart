@@ -122,6 +122,7 @@ class _RouteSearchScreenState extends State<RouteSearchScreen> {
   }
 }
 
+
 class RouteList extends StatelessWidget {
   const RouteList({Key? key}) : super(key: key);
 
@@ -146,6 +147,7 @@ class RouteList extends StatelessWidget {
                 title: routes[index].routeName,
                 time: '${routes[index].startTime} - ${routes[index].endTime}',
                 price: '${routes[index].routePrice} VND',
+                routeId: routes[index].id, 
               );
             },
           );
@@ -160,6 +162,7 @@ class RouteCard extends StatelessWidget {
   final String routeDetails;
   final String time;
   final String price;
+  final String routeId;
 
   const RouteCard({
     Key? key,
@@ -167,6 +170,7 @@ class RouteCard extends StatelessWidget {
     required this.title,
     required this.time,
     required this.price,
+    required this.routeId,
   }) : super(key: key);
 
   @override
@@ -219,11 +223,20 @@ class RouteCard extends StatelessWidget {
             )
           ],
         ),
-        onTap: () {
+        onTap: () async {
+          // Khi bấm vào một tuyến xe, gọi API để lấy tất cả thời gian cho tuyến đó
+          List<TimeLine> timelines =
+              await BusApi().getTimelinesForRoute(routeId);
+
+          // Sau khi nhận được dữ liệu, chuyển hướng đến màn hình hiển thị thời gian
           Navigator.push(
             context,
             MaterialPageRoute(
-              builder: (context) => RouteDetailScreen(title: title),
+              builder: (context) => RouteDetailScreen(
+                routeId: routeId, 
+                title: title,
+                timelines: timelines,
+              ),
             ),
           );
         },
