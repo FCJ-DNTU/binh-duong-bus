@@ -57,7 +57,7 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(Exception.class)
     @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
     public ErrorResponse handleUnknownException(Exception e, HttpServletRequest req) {
-        // logger.error("Exception caught: ", e)
+        logger.error("Exception caught: ", e);
         return new ErrorResponse(
                 HttpStatus.INTERNAL_SERVER_ERROR,
                 "An unexpected error occurred",
