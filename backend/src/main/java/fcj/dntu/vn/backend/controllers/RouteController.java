@@ -8,10 +8,11 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import fcj.dntu.vn.backend.dtos.RouteDto;
+import fcj.dntu.vn.backend.dtos.RouteOnlyDto;
 import fcj.dntu.vn.backend.dtos.StopDto;
 import fcj.dntu.vn.backend.dtos.TimelineDto;
 import fcj.dntu.vn.backend.exceptions.responses.ApiResponse;
-import fcj.dntu.vn.backend.models.*;
+import fcj.dntu.vn.backend.models.RouteModel;
 import fcj.dntu.vn.backend.services.RouteService;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -24,7 +25,7 @@ public class RouteController {
     RouteService routeService;
 
     @GetMapping
-    public ResponseEntity<ApiResponse<List<RouteDto>>> getAllRoutes() {
+    public ResponseEntity<ApiResponse<List<RouteOnlyDto>>> getAllRoutes() {
         return routeService.getAllRoutes();
     }
 
