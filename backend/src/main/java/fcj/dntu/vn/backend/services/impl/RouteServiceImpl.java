@@ -3,7 +3,6 @@ package fcj.dntu.vn.backend.services.impl;
 import java.util.List;
 import java.util.UUID;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
@@ -11,117 +10,54 @@ import org.springframework.stereotype.Service;
 import fcj.dntu.vn.backend.dtos.*;
 import fcj.dntu.vn.backend.exceptions.RouteNotFound;
 import fcj.dntu.vn.backend.exceptions.responses.ApiResponse;
+import fcj.dntu.vn.backend.mapper.RouteMapper;
+import fcj.dntu.vn.backend.mapper.StopMapper;
+import fcj.dntu.vn.backend.mapper.TimelineMapper;
 import fcj.dntu.vn.backend.models.*;
 import fcj.dntu.vn.backend.models.enums.DirectionEnum;
 import fcj.dntu.vn.backend.repositories.*;
 import fcj.dntu.vn.backend.services.RouteService;
-import fcj.dntu.vn.backend.utils.GeoUtils;
+import jakarta.transaction.Transactional;
 
 @Service
 public class RouteServiceImpl implements RouteService {
 
-        @Autowired
-        private RouteRepository routeRepository;
+        private final RouteRepository routeRepository;
+        private final StopRepository stopRepository;
+        private final TimeLineRepository timeLineRepository;
+        private final RouteMapper routeMapper;
+        private final StopMapper stopMapper;
+        private final TimelineMapper timelineMapper;
 
-        @Autowired
-        private StopRepository stopRepository;
-
-        @Autowired
-        private TimeLineRepository timeLineRepository;
+        public RouteServiceImpl(RouteRepository routeRepository, StopRepository stopRepository,
+                        TimeLineRepository timeLineRepository, RouteMapper routeMapper, StopMapper stopMapper,
+                        TimelineMapper timelineMapper) {
+                this.routeRepository = routeRepository;
+                this.stopRepository = stopRepository;
+                this.timeLineRepository = timeLineRepository;
+                this.routeMapper = routeMapper;
+                this.stopMapper = stopMapper;
+                this.timelineMapper = timelineMapper;
+        }
 
         @Override
-        public ResponseEntity<ApiResponse<List<RouteDto>>> getAllRoutes() {
+        public ResponseEntity<ApiResponse<List<RouteOnlyDto>>> getAllRoutes() {
                 List<RouteModel> routes = routeRepository.findAll();
                 if (routes.isEmpty()) {
                         throw new RouteNotFound("Không có tuyến xe nào trong hệ thống");
                 }
 
-                List<RouteDto> routeDtos = routes.stream().map(route -> {
-                        List<BusDto> busDtos = route.getBuses().stream()
-                                        .map(bus -> new BusDto(
-                                                        bus.getId(),
-                                                        bus.getBusNumber(),
-                                                        GeoUtils.pointToLocation(bus.getLocation())))
-                                        .toList();
-
-                        List<StopWithoutRouteIdDto> stopDtos = route.getStops().stream()
-                                        .map(stop -> new StopWithoutRouteIdDto(
-                                                        stop.getId(),
-                                                        stop.getOsmNodeId(),
-                                                        stop.getStopName(),
-                                                        GeoUtils.pointToLocation(stop.getLocation()),
-                                                        stop.getSequence(),
-                                                        stop.getDirection()))
-                                        .toList();
-
-                        List<TimelineWithoutRouteId> timelineDtos = route.getTimeLines().stream()
-                                        .map(timeline -> new TimelineWithoutRouteId(
-                                                        timeline.getId(),
-                                                        timeline.getDirection(),
-                                                        timeline.getDepartureTime()))
-                                        .toList();
-
-                        List<WayDto> wayDtos = route.getWays().stream().map(way -> new WayDto(
-                                        way.getId(),
-                                        way.getName(),
-                                        way.getSequence())).toList();
-
-                        return new RouteDto(
-                                        route.getId(),
-                                        route.getOsmRelationId(),
-                                        route.getRouteNumber(),
-                                        route.getRouteName(),
-                                        route.getStartTime(),
-                                        route.getEndTime(),
-                                        route.getRoutePrice(),
-                                        route.getIntervalMinutes(),
-                                        route.getLengthKm(),
-                                        busDtos,
-                                        stopDtos,
-                                        timelineDtos,
-                                        wayDtos);
-                }).toList();
+                List<RouteOnlyDto> routeDtos = routeMapper.toRouteOnlyDtoList(routes);
 
                 return ResponseEntity.ok(new ApiResponse<>("Danh sách tuyến đường", routeDtos));
         }
 
         @Override
         public ResponseEntity<ApiResponse<RouteDto>> getRouteById(UUID id) {
-                RouteModel route = routeRepository.findById(id)
+                RouteModel route = routeRepository.findByIdWithAllRelations(id)
                                 .orElseThrow(() -> new RouteNotFound("Tuyến đường với ID " + id + " không tồn tại"));
 
-                List<BusDto> busDtos = route.getBuses().stream().map(bus -> new BusDto(
-                                bus.getId(),
-                                bus.getBusNumber(),
-                                GeoUtils.pointToLocation(bus.getLocation()))).toList();
-
-                List<StopWithoutRouteIdDto> stopDtos = route.getStops().stream().map(stop -> new StopWithoutRouteIdDto(
-                                stop.getId(),
-                                stop.getOsmNodeId(),
-                                stop.getStopName(),
-                                GeoUtils.pointToLocation(stop.getLocation()),
-                                stop.getSequence(),
-                                stop.getDirection())).toList();
-
-                List<TimelineWithoutRouteId> timelineDto = route.getTimeLines().stream().map(
-                                tl -> new TimelineWithoutRouteId(
-                                                tl.getId(),
-                                                tl.getDirection(),
-                                                tl.getDepartureTime()))
-                                .toList();
-
-                List<WayDto> wayDtos = route.getWays().stream().map(
-                                way -> new WayDto(
-                                                way.getId(),
-                                                way.getName(),
-                                                way.getSequence()))
-                                .toList();
-
-                RouteDto routeDto = new RouteDto(route.getId(), route.getOsmRelationId(), route.getRouteNumber(),
-                                route.getRouteName(),
-                                route.getStartTime(), route.getEndTime(), route.getRoutePrice(),
-                                route.getIntervalMinutes(),
-                                route.getLengthKm(), busDtos, stopDtos, timelineDto, wayDtos);
+                RouteDto routeDto = routeMapper.toRouteDto(route);
 
                 return ResponseEntity.ok(new ApiResponse<>("Thông tin tuyến đường", routeDto));
         }
@@ -129,53 +65,13 @@ public class RouteServiceImpl implements RouteService {
         @Override
         public ResponseEntity<?> addRoute(RouteModel route) {
                 RouteModel savedRoute = routeRepository.save(route);
-
-                List<BusDto> busDtos = savedRoute.getBuses() != null
-                                ? savedRoute.getBuses().stream().map(bus -> new BusDto(
-                                                bus.getId(),
-                                                bus.getBusNumber(),
-                                                GeoUtils.pointToLocation(bus.getLocation()))).toList()
-                                : List.of();
-
-                List<StopWithoutRouteIdDto> stopDtos = savedRoute.getStops() != null
-                                ? savedRoute.getStops().stream()
-                                                .map(stop -> new StopWithoutRouteIdDto(
-                                                                stop.getId(),
-                                                                stop.getOsmNodeId(),
-                                                                stop.getStopName(),
-                                                                GeoUtils.pointToLocation(stop.getLocation()),
-                                                                stop.getSequence(),
-                                                                stop.getDirection()))
-                                                .toList()
-                                : List.of();
-
-                List<TimelineWithoutRouteId> timelineDtos = savedRoute.getTimeLines() != null
-                                ? savedRoute.getTimeLines().stream()
-                                                .map(timeline -> new TimelineWithoutRouteId(
-                                                                timeline.getId(),
-                                                                timeline.getDirection(),
-                                                                timeline.getDepartureTime()))
-                                                .toList()
-                                : List.of();
-
-                List<WayDto> wayDtos = savedRoute.getWays() != null ? savedRoute.getWays().stream().map(
-                                way -> new WayDto(
-                                                way.getId(),
-                                                way.getName(),
-                                                way.getSequence()))
-                                .toList() : List.of();
-
-                RouteDto responseDto = new RouteDto(savedRoute.getId(), savedRoute.getOsmRelationId(),
-                                savedRoute.getRouteNumber(),
-                                savedRoute.getRouteName(),
-                                savedRoute.getStartTime(), savedRoute.getEndTime(), savedRoute.getRoutePrice(),
-                                savedRoute.getIntervalMinutes(), savedRoute.getLengthKm(), busDtos, stopDtos,
-                                timelineDtos, wayDtos);
+                RouteDto responseDto = routeMapper.toRouteDto(savedRoute);
 
                 return ResponseEntity.status(HttpStatus.CREATED).body(
                                 new ApiResponse<>("Tuyến đường đã được thêm thành công!", responseDto));
         }
 
+        @Transactional
         @Override
         public ResponseEntity<?> updateRoute(UUID id, RouteModel updatedRoute) {
                 RouteModel existingRoute = routeRepository.findById(id)
@@ -202,45 +98,10 @@ public class RouteServiceImpl implements RouteService {
                         existingRoute.setTimeLines(updatedRoute.getTimeLines());
                 }
 
-                // save
+                // save db
                 RouteModel savedRoute = routeRepository.save(existingRoute);
-
-                // transfer to dtoo to response
-                List<BusDto> busDtos = savedRoute.getBuses().stream().map(bus -> new BusDto(
-                                bus.getId(),
-                                bus.getBusNumber(),
-                                GeoUtils.pointToLocation(bus.getLocation()))).toList();
-
-                List<StopWithoutRouteIdDto> stopDtos = savedRoute.getStops().stream()
-                                .map(stop -> new StopWithoutRouteIdDto(
-                                                stop.getId(),
-                                                stop.getOsmNodeId(),
-                                                stop.getStopName(),
-                                                GeoUtils.pointToLocation(stop.getLocation()),
-                                                stop.getSequence(),
-                                                stop.getDirection()))
-                                .toList();
-
-                List<TimelineWithoutRouteId> timelineDtos = savedRoute.getTimeLines().stream().map(
-                                tl -> new TimelineWithoutRouteId(
-                                                tl.getId(),
-                                                tl.getDirection(),
-                                                tl.getDepartureTime()))
-                                .toList();
-
-                List<WayDto> wayDtos = savedRoute.getWays().stream().map(
-                                way -> new WayDto(
-                                                way.getId(),
-                                                way.getName(),
-                                                way.getSequence()))
-                                .toList();
-
-                RouteDto responseDto = new RouteDto(savedRoute.getId(), savedRoute.getOsmRelationId(),
-                                savedRoute.getRouteNumber(),
-                                savedRoute.getRouteName(),
-                                savedRoute.getStartTime(), savedRoute.getEndTime(), savedRoute.getRoutePrice(),
-                                savedRoute.getIntervalMinutes(), savedRoute.getLengthKm(), busDtos, stopDtos,
-                                timelineDtos, wayDtos);
+                // return dto
+                RouteDto responseDto = routeMapper.toRouteDto(savedRoute);
 
                 return ResponseEntity.ok(new ApiResponse<>("Tuyến đường đã được cập nhật thành công!", responseDto));
         }
@@ -250,6 +111,10 @@ public class RouteServiceImpl implements RouteService {
                 RouteModel existingRoute = routeRepository.findById(id)
                                 .orElseThrow(() -> new RouteNotFound("Tuyến đường với ID " + id + " không tồn tại"));
 
+                // delete relation before delete route
+                stopRepository.deleteByRouteId(id);
+                timeLineRepository.deleteByRouteId(id);
+
                 routeRepository.delete(existingRoute);
 
                 return ResponseEntity.ok(new ApiResponse<>("Tuyến đường đã bị xóa thành công!", null));
@@ -257,38 +122,32 @@ public class RouteServiceImpl implements RouteService {
 
         @Override
         public ResponseEntity<ApiResponse<List<StopDto>>> getRouteStops(UUID routeId, String direction) {
-                RouteModel route = routeRepository.findById(routeId)
+                routeRepository.findById(routeId)
                                 .orElseThrow(() -> new RouteNotFound("Tuyến xe không tồn tại"));
 
                 List<StopModel> stops;
 
-                if (direction != null) {
-                        stops = stopRepository.findByRouteIdAndDirection(routeId,
-                                        DirectionEnum.valueOf(direction.toUpperCase()));
+                if (direction != null && !direction.isEmpty()) {
+                        try {
+                                DirectionEnum directionEnum = DirectionEnum.valueOf(direction.toUpperCase());
+                                stops = stopRepository.findByRouteIdAndDirection(routeId, directionEnum);
+                        } catch (IllegalArgumentException e) {
+                                return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                                                .body(new ApiResponse<>("Direction không hợp lệ: " + direction,
+                                                                List.of()));
+                        }
                 } else {
                         stops = stopRepository.findByRouteId(routeId);
                 }
 
-                if (stops.isEmpty()) {
-                        return ResponseEntity.ok(new ApiResponse<>("Danh sách các điểm dừng của tuyến", List.of()));
-                }
-
-                List<StopDto> stopDtos = stops.stream()
-                                .map(stop -> new StopDto(
-                                                stop.getId(),
-                                                stop.getStopName(),
-                                                GeoUtils.pointToLocation(stop.getLocation()),
-                                                stop.getSequence(),
-                                                stop.getDirection(),
-                                                stop.getRoute().getId()))
-                                .toList();
+                List<StopDto> stopDtos = stopMapper.toStopDtoList(stops);
 
                 return ResponseEntity.ok(new ApiResponse<>("Danh sách các điểm dừng của tuyến", stopDtos));
         }
 
         @Override
         public ResponseEntity<ApiResponse<List<TimelineDto>>> getRouteTimelines(UUID routeId, String direction) {
-                RouteModel route = routeRepository.findById(routeId)
+                routeRepository.findById(routeId)
                                 .orElseThrow(() -> new RouteNotFound("Tuyến xe với ID " + routeId + " không tồn tại"));
 
                 List<TimeLineModel> timeLines;
@@ -299,32 +158,21 @@ public class RouteServiceImpl implements RouteService {
                                 timeLines = timeLineRepository.findByRouteIdAndDirection(routeId, directionEnum);
                         } catch (IllegalArgumentException e) {
                                 return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                                                .body(new ApiResponse<>("Invalid direction value: " + direction,
+                                                .body(new ApiResponse<>("Direction không hợp lệ: " + direction,
                                                                 List.of()));
                         }
                 } else {
                         timeLines = timeLineRepository.findByRouteId(routeId);
                 }
 
-                if (timeLines.isEmpty()) {
-                        return ResponseEntity
-                                        .ok(new ApiResponse<>("Danh sách thời gian khởi hành của tuyến", List.of()));
-                }
-
-                List<TimelineDto> timeLineDtos = timeLines.stream()
-                                .map(timeLine -> new TimelineDto(
-                                                timeLine.getId(),
-                                                timeLine.getDirection(),
-                                                timeLine.getDepartureTime(),
-                                                timeLine.getRoute().getId()))
-                                .toList();
+                List<TimelineDto> timeLineDtos = timelineMapper.toTimelineDtoList(timeLines);
 
                 return ResponseEntity.ok(new ApiResponse<>("Danh sách thời gian khởi hành của tuyến", timeLineDtos));
         }
 
         @Override
         public ResponseEntity<ApiResponse<List<RouteDto>>> getRouteByRouteName(String routeName) {
-                List<RouteModel> routes = routeRepository.findByRouteName(routeName);
+                List<RouteModel> routes = routeRepository.findByRouteNameWithAllRelations(routeName);
 
                 if (routes.isEmpty()) {
                         return ResponseEntity.status(HttpStatus.NOT_FOUND)
@@ -332,43 +180,7 @@ public class RouteServiceImpl implements RouteService {
                                                         List.of()));
                 }
 
-                List<RouteDto> routeDtos = routes.stream().map(route -> {
-                        List<BusDto> busDtos = route.getBuses().stream().map(bus -> new BusDto(
-                                        bus.getId(),
-                                        bus.getBusNumber(),
-                                        GeoUtils.pointToLocation(bus.getLocation()))).toList();
-
-                        List<StopWithoutRouteIdDto> stopDtos = route.getStops().stream()
-                                        .map(stop -> new StopWithoutRouteIdDto(
-                                                        stop.getId(),
-                                                        stop.getOsmNodeId(),
-                                                        stop.getStopName(),
-                                                        GeoUtils.pointToLocation(stop.getLocation()),
-                                                        stop.getSequence(),
-                                                        stop.getDirection()))
-                                        .toList();
-
-                        List<TimelineWithoutRouteId> timelineDtos = route.getTimeLines().stream()
-                                        .map(timeLine -> new TimelineWithoutRouteId(
-                                                        timeLine.getId(),
-                                                        timeLine.getDirection(),
-                                                        timeLine.getDepartureTime()))
-                                        .toList();
-
-                        List<WayDto> wayDtos = route.getWays().stream().map(
-                                        way -> new WayDto(
-                                                        way.getId(),
-                                                        way.getName(),
-                                                        way.getSequence()))
-                                        .toList();
-
-                        return new RouteDto(route.getId(), route.getOsmRelationId(), route.getRouteNumber(),
-                                        route.getRouteName(),
-                                        route.getStartTime(),
-                                        route.getEndTime(), route.getRoutePrice(), route.getIntervalMinutes(),
-                                        route.getLengthKm(),
-                                        busDtos, stopDtos, timelineDtos, wayDtos);
-                }).toList();
+                List<RouteDto> routeDtos = routeMapper.toRouteDtoList(routes);
 
                 return ResponseEntity.ok(new ApiResponse<>("Danh sách tuyến đường", routeDtos));
         }
