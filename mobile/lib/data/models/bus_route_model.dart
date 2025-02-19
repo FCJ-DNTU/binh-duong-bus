@@ -1,8 +1,8 @@
-import 'package:intl/intl.dart'; // Để định dạng thời gian
+import 'package:intl/intl.dart';
 
 class BusRoute {
   final String id;
-  final String routeNumber; // Định nghĩa routeNumber
+  final String routeNumber;
   final String routeName;
   final String startTime;
   final String endTime;
@@ -12,7 +12,7 @@ class BusRoute {
 
   BusRoute({
     required this.id,
-    required this.routeNumber, // Khai báo routeNumber
+    required this.routeNumber,
     required this.routeName,
     required this.startTime,
     required this.endTime,
@@ -21,26 +21,21 @@ class BusRoute {
     required this.timelines,
   });
 
-  // Phương thức formatTime để chuyển đổi thời gian thành dạng HH:mm
   static String formatTime(String time) {
     if (time.isEmpty || time == 'null') {
-      return "N/A"; // Trường hợp không có dữ liệu
+      return "N/A";
     }
-    List<String> timeList = time.split(',');
 
+    List<String> timeList = time.split(',');
     return timeList.map((t) {
-      final parts = t.trim().split(':');
-      if (parts.length == 2) {
-        try {
-          final dateFormat = DateFormat('HH:mm'); // Định dạng giờ:phút
-          final formattedTime = DateFormat('HH:mm')
-              .format(DateFormat('HH:mm').parse(parts.join(':')));
-          return formattedTime;
-        } catch (e) {
-          return "N/A"; // Nếu không thể parse được thời gian
-        }
+      try {
+        final dateFormat = DateFormat('HH:mm');
+        final formattedTime =
+            dateFormat.format(DateFormat('HH:mm:ss').parse(t.trim()));
+        return formattedTime;
+      } catch (e) {
+        return "N/A";
       }
-      return "N/A"; // Trường hợp lỗi
     }).join(', ');
   }
 
@@ -60,8 +55,8 @@ class BusRoute {
       routeNumber: json['routeNumber'] ?? 'N/A',
       routeName: json['routeName'] ?? 'N/A',
       routePrice: json['routePrice']?.toString() ?? '0',
-      startTime: json['startTime'] ?? '00:00',
-      endTime: json['endTime'] ?? '00:00',
+      startTime: formatTime(json['startTime'] ?? '00:00'),
+      endTime: formatTime(json['endTime'] ?? '00:00'),
       routeStops: stops,
       timelines: timelines,
     );
@@ -97,7 +92,7 @@ class TimeLine {
     return TimeLine(
       id: json['id'] ?? 'N/A',
       direction: json['direction'] ?? 'N/A',
-      departureTime: json['departureTime'] ?? '00:00',
+      departureTime: BusRoute.formatTime(json['departureTime'] ?? '00:00'),
       routeId: json['routeId'] ?? 'N/A',
     );
   }

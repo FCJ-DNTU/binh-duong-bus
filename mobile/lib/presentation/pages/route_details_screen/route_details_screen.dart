@@ -1,18 +1,17 @@
 import 'package:binhduongbus/data/sources/remote/bus_api.dart';
 import 'package:flutter/material.dart';
-import 'package:binhduongbus/data/models/bus_route_model.dart'; // Đảm bảo bạn import model TimeLine
+import 'package:binhduongbus/data/models/bus_route_model.dart'; 
 
 class RouteDetailScreen extends StatefulWidget {
   final String routeId;
   final String title;
-  final List<TimeLine> timelines; 
-
+  final List<TimeLine> timelines;
 
   const RouteDetailScreen({
     Key? key,
     required this.routeId,
     required this.title,
-    required this.timelines, 
+    required this.timelines,
   }) : super(key: key);
 
   @override
@@ -26,8 +25,7 @@ class _RouteDetailScreenState extends State<RouteDetailScreen> {
   @override
   void initState() {
     super.initState();
-    routeDetails =
-        BusApi().getRouteDetails(widget.routeId); 
+    routeDetails = BusApi().getRouteDetails(widget.routeId);
   }
 
   @override
@@ -62,20 +60,18 @@ class _RouteDetailScreenState extends State<RouteDetailScreen> {
                   Row(
                     children: [
                       const Icon(
-                        Icons.directions_bus, 
-                        color: Colors.blue, 
+                        Icons.directions_bus,
+                        color: Colors.blue,
                       ),
-                      const SizedBox(
-                          width: 8), 
+                      const SizedBox(width: 8),
                       Expanded(
                         child: Text(
                           route.routeName,
                           style: const TextStyle(
                               fontSize: 18, fontWeight: FontWeight.bold),
-                          overflow:
-                              TextOverflow.ellipsis, 
-                          maxLines: 2, 
-                          softWrap: true, 
+                          overflow: TextOverflow.ellipsis,
+                          maxLines: 2,
+                          softWrap: true,
                         ),
                       ),
                     ],
@@ -139,7 +135,7 @@ class _RouteDetailScreenState extends State<RouteDetailScreen> {
                           height: 400,
                           child: TabBarView(
                             children: [
-                              _buildSchedule(route),
+                              _buildSchedule(),
                               _buildStopsList(stops),
                               _buildRouteInfo(route),
                             ],
@@ -157,18 +153,14 @@ class _RouteDetailScreenState extends State<RouteDetailScreen> {
     );
   }
 
-
-  Widget _buildSchedule(BusRoute route) {
-    List<String> selectedSchedule =
-        isGoingRoute ? route.startTime.split(',') : route.endTime.split(',');
-
+  Widget _buildSchedule() {
     return GridView.builder(
       gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
         crossAxisCount: 4,
         crossAxisSpacing: 8.0,
         mainAxisSpacing: 8.0,
       ),
-      itemCount: selectedSchedule.length,
+      itemCount: widget.timelines.length,
       itemBuilder: (context, index) {
         return Container(
           decoration: BoxDecoration(
@@ -178,7 +170,8 @@ class _RouteDetailScreenState extends State<RouteDetailScreen> {
           ),
           child: Center(
             child: Text(
-              selectedSchedule[index],
+              widget.timelines[index]
+                  .departureTime,
               style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
             ),
           ),
@@ -187,7 +180,7 @@ class _RouteDetailScreenState extends State<RouteDetailScreen> {
     );
   }
 
-  // Widget hiển thị danh sách trạm dừng
+
   Widget _buildStopsList(List<String> stops) {
     return ListView.builder(
       itemCount: stops.length,
@@ -195,7 +188,7 @@ class _RouteDetailScreenState extends State<RouteDetailScreen> {
     );
   }
 
-  // Widget hiển thị từng trạm dừng
+
   Widget _buildStopItem(int index, List<String> stops) {
     bool isFirst = index == 0;
     bool isLast = index == stops.length - 1;
@@ -222,7 +215,7 @@ class _RouteDetailScreenState extends State<RouteDetailScreen> {
     );
   }
 
-  // Widget hiển thị thông tin chi tiết tuyến xe
+
   Widget _buildRouteInfo(BusRoute route) {
     return SingleChildScrollView(
       child: Column(

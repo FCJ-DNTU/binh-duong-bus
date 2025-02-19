@@ -1,5 +1,6 @@
 import 'package:dio/dio.dart';
-import 'package:binhduongbus/data/models/bus_route_model.dart'; // Import các model
+import 'package:binhduongbus/data/models/bus_route_model.dart';
+import 'dart:convert';
 
 class BusApi {
   final Dio dio = Dio();
@@ -19,7 +20,6 @@ class BusApi {
     }
   }
 
-  // Hàm lấy thông tin chi tiết tuyến xe (bao gồm trạm dừng)
   Future<BusRoute> getRouteDetails(String routeId) async {
     try {
       final response = await dio.get(
@@ -40,11 +40,11 @@ class BusApi {
         throw Exception("Không thể lấy thông tin chi tiết tuyến xe");
       }
     } catch (e) {
-      throw Exception("Lỗi khi gọi API: $e");
+      print("Lỗi khi gọi API: ${e.toString()}");
+      throw Exception("Lỗi khi gọi API: ${e.toString()}");
     }
   }
 
-  // Hàm lấy danh sách timelines cho một tuyến xe
   Future<List<TimeLine>> getTimelinesForRoute(String routeId) async {
     try {
       final response = await dio.get(
@@ -59,6 +59,26 @@ class BusApi {
       throw Exception("Lỗi khi gọi API: $e");
     }
   }
+
+  static const String baseUrl =
+      'http://ec2-175-41-188-48.ap-southeast-1.compute.amazonaws.com:8080';
+
+  Future<List<BusRoute>> searchRoutes(String name) async {
+    try {
+      final response = await dio.get(
+        '$baseUrl/api/routes/search',
+        queryParameters: {'name': name},
+      );
+
+      if (response.statusCode == 200) {
+        final data = response.data["data"] as List;
+        return data.map((json) => BusRoute.fromJson(json)).toList();
+      } else {
+        throw Exception("Lỗi server: ${response.statusCode}");
+      }
+    } catch (e) {
+      print("Lỗi khi gọi API: $e");
+      return [];
+    }
+  }
 }
-
-
