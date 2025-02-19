@@ -58,9 +58,11 @@ public class RouteModel {
     private Set<BusModel> buses;
 
     @OneToMany(mappedBy = "route", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    @OrderBy("sequence ASC")
     private Set<StopModel> stops;
 
     @OneToMany(mappedBy = "route", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    @OrderBy("departureTime ASC")
     private Set<TimeLineModel> timeLines;
 
     @ManyToMany
@@ -69,6 +71,7 @@ public class RouteModel {
             joinColumns = {@JoinColumn(name = "route_id")},
             inverseJoinColumns = {@JoinColumn(name = "way_id")}
     )
+    @OrderBy("sequence ASC")
     private Set<WayModel> ways;
 
     @Column(name = "created_at", nullable = false, updatable = false)

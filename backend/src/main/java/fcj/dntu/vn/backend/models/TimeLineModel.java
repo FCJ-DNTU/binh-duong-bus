@@ -27,7 +27,7 @@ public class TimeLineModel {
     private UUID id;
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "direction", nullable = false)
+    @Column(name = "direction")
     private DirectionEnum direction;
 
     @Column(name = "departure_time", nullable = false)
