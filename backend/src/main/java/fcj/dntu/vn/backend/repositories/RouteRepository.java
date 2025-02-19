@@ -30,4 +30,6 @@ public interface RouteRepository extends JpaRepository<RouteModel, UUID> {
                         "LEFT JOIN FETCH r.ways " +
                         "WHERE r.routeName = :routeName")
         List<RouteModel> findByRouteNameWithAllRelations(@Param("routeName") String routeName);
+
+        List<RouteModel> findByRouteNumber(String routeNumber);
 }

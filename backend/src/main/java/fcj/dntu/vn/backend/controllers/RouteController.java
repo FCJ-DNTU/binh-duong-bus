@@ -51,6 +51,11 @@ public class RouteController {
         return routeService.getRouteTimelines(routeId, direction);
     }
 
+    @GetMapping("/{routeId}/return")
+    public ResponseEntity<ApiResponse<RouteDto>> getReturnRoute(@PathVariable UUID routeId) {
+        return routeService.getReturnRoute(routeId);
+    }
+
     @PostMapping("/add")
     public ResponseEntity<?> addRoute(@RequestBody RouteModel route) {
         return routeService.addRoute(route);
