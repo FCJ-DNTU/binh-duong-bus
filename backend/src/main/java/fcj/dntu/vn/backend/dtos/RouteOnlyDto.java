@@ -2,7 +2,6 @@ package fcj.dntu.vn.backend.dtos;
 
 import java.math.BigDecimal;
 import java.time.LocalTime;
-import java.util.List;
 import java.util.UUID;
 
 import lombok.Getter;
@@ -10,7 +9,7 @@ import lombok.Setter;
 
 @Getter
 @Setter
-public class RouteDto {
+public class RouteOnlyDto {
     private UUID id;
     private Long osmRelationId;
     private String routeNumber;
@@ -21,16 +20,10 @@ public class RouteDto {
     private String operator;
     private Integer intervalMinutes;
     private BigDecimal lengthKm;
-    private List<BusDto> buses;
-    private List<StopWithoutRouteIdDto> stops;
-    private List<TimelineWithoutRouteId> timelines;
-    private List<WayDto> ways;
 
-    public RouteDto(UUID id, Long osmRelationId, String routeNumber, String routeName, LocalTime startTime,
+    public RouteOnlyDto(UUID id, Long osmRelationId, String routeNumber, String routeName, LocalTime startTime,
             LocalTime endTime,
-            Long routePrice, String operator, Integer intervalMinutes, BigDecimal lengthKm, List<BusDto> buses,
-            List<StopWithoutRouteIdDto> stops,
-            List<TimelineWithoutRouteId> timelines, List<WayDto> ways) {
+            Long routePrice, String operator, Integer intervalMinutes, BigDecimal lengthKm) {
         this.id = id;
         this.osmRelationId = osmRelationId;
         this.routeNumber = routeNumber;
@@ -41,9 +34,5 @@ public class RouteDto {
         this.operator = operator;
         this.intervalMinutes = intervalMinutes;
         this.lengthKm = lengthKm;
-        this.buses = buses;
-        this.stops = stops;
-        this.timelines = timelines;
-        this.ways = ways;
     }
 }

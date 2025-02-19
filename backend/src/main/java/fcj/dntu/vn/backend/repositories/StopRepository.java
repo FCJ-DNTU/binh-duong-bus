@@ -2,6 +2,7 @@ package fcj.dntu.vn.backend.repositories;
 
 import fcj.dntu.vn.backend.models.StopModel;
 import fcj.dntu.vn.backend.models.enums.DirectionEnum;
+import jakarta.transaction.Transactional;
 
 import org.locationtech.jts.geom.Location;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -27,4 +28,7 @@ public interface StopRepository extends JpaRepository<StopModel, UUID> {
                 WHERE ST_DistanceSphere(location, ST_SetSRID(ST_MakePoint(?2, ?1), 4326)) <= ?3
             """, nativeQuery = true)
     List<StopModel> findStopNearby(double longitude, double latitude, int i);
+
+    @Transactional
+    void deleteByRouteId(UUID id);
 }

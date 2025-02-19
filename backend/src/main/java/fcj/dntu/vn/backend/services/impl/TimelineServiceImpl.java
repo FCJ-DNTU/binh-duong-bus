@@ -3,7 +3,6 @@ package fcj.dntu.vn.backend.services.impl;
 import java.util.List;
 import java.util.UUID;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
@@ -12,6 +11,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import fcj.dntu.vn.backend.dtos.TimelineDto;
 import fcj.dntu.vn.backend.exceptions.RouteNotFound;
 import fcj.dntu.vn.backend.exceptions.responses.ApiResponse;
+import fcj.dntu.vn.backend.mapper.TimelineMapper;
 import fcj.dntu.vn.backend.models.RouteModel;
 import fcj.dntu.vn.backend.models.TimeLineModel;
 import fcj.dntu.vn.backend.repositories.RouteRepository;
@@ -21,11 +21,16 @@ import fcj.dntu.vn.backend.services.TimelineService;
 @Service
 public class TimelineServiceImpl implements TimelineService {
 
-        @Autowired
-        TimeLineRepository timelineRepository;
+        private final RouteRepository routeRepository;
+        private final TimeLineRepository timelineRepository;
+        private final TimelineMapper timelineMapper;
 
-        @Autowired
-        RouteRepository routeRepository;
+        public TimelineServiceImpl(RouteRepository routeRepository, TimeLineRepository timelineRepository,
+                        TimelineMapper timelineMapper) {
+                this.routeRepository = routeRepository;
+                this.timelineRepository = timelineRepository;
+                this.timelineMapper = timelineMapper;
+        }
 
         @Override
         public ResponseEntity<ApiResponse<List<TimelineDto>>> getAllTimelines() {
@@ -34,15 +39,9 @@ public class TimelineServiceImpl implements TimelineService {
                         throw new RouteNotFound("Không có timeline nào trong hệ thống");
                 }
 
-                List<TimelineDto> timeLineDtos = timelines.stream()
-                                .map(timeLine -> new TimelineDto(
-                                                timeLine.getId(),
-                                                timeLine.getDirection(),
-                                                timeLine.getDepartureTime(),
-                                                timeLine.getRoute().getId()))
-                                .toList();
+                List<TimelineDto> timelineDtos = timelineMapper.toTimelineDtoList(timelines);
 
-                return ResponseEntity.ok(new ApiResponse<>("Danh sách timelines", timeLineDtos));
+                return ResponseEntity.ok(new ApiResponse<>("Danh sách timelines", timelineDtos));
         }
 
         @Override
@@ -51,11 +50,7 @@ public class TimelineServiceImpl implements TimelineService {
                                 .orElseThrow(() -> new RouteNotFound(
                                                 "Timeline với ID " + id + " không tồn tại"));
 
-                TimelineDto timelineDto = new TimelineDto(
-                                timeline.getId(),
-                                timeline.getDirection(),
-                                timeline.getDepartureTime(),
-                                timeline.getRoute().getId());
+                TimelineDto timelineDto = timelineMapper.toTimelineDto(timeline);
 
                 return ResponseEntity.ok(new ApiResponse<>("Thông tin timeline", timelineDto));
         }
@@ -67,57 +62,38 @@ public class TimelineServiceImpl implements TimelineService {
                                         .body(new ApiResponse<>("Route ID is missing", null));
                 }
 
-                UUID routeId = timelineDto.getRouteId();
-                RouteModel route = routeRepository.findById(routeId)
+                RouteModel route = routeRepository.findById(timelineDto.getRouteId())
                                 .orElseThrow(() -> new RouteNotFound(
-                                                "Route with ID " + routeId + " not found"));
+                                                "Route với ID " + timelineDto.getRouteId() + " không tồn tại"));
 
-                TimeLineModel timeline = TimeLineModel.builder()
-                                .direction(timelineDto.getDirection())
-                                .departureTime(timelineDto.getDepartureTime())
-                                .route(route)
-                                .build();
+                TimeLineModel timeline = timelineMapper.toTimelineModel(timelineDto);
+                timeline.setRoute(route);
 
                 TimeLineModel savedTimeline = timelineRepository.save(timeline);
+                TimelineDto savedTimelineDto = timelineMapper.toTimelineDto(savedTimeline);
 
-                TimelineDto savedTimelineDto = new TimelineDto(
-                                savedTimeline.getId(),
-                                savedTimeline.getDirection(),
-                                savedTimeline.getDepartureTime(),
-                                savedTimeline.getRoute().getId());
-
-                return ResponseEntity.status(HttpStatus.CREATED).body(
-                                new ApiResponse<>("Timeline đã được thêm thành công!", savedTimelineDto));
+                return ResponseEntity.status(HttpStatus.CREATED)
+                                .body(new ApiResponse<>("Timeline đã được thêm thành công!", savedTimelineDto));
         }
 
         @Override
         public ResponseEntity<?> updateTimeline(UUID id, TimelineDto timelineDto) {
                 TimeLineModel existingTimeline = timelineRepository.findById(id)
-                                .orElseThrow(() -> new RouteNotFound(
-                                                "Timeline với ID " + id + " không tồn tại"));
+                                .orElseThrow(() -> new RouteNotFound("Timeline với ID " + id + " không tồn tại"));
 
-                existingTimeline.setDirection(timelineDto.getDirection());
-                existingTimeline.setDepartureTime(timelineDto.getDepartureTime());
+                timelineMapper.updateTimelineFromDto(timelineDto, existingTimeline);
 
                 if (timelineDto.getRouteId() != null) {
                         RouteModel route = routeRepository.findById(timelineDto.getRouteId())
-                                        .orElseThrow(
-                                                        () -> new RouteNotFound("Route with ID "
-                                                                        + timelineDto.getRouteId()
-                                                                        + " not found"));
+                                        .orElseThrow(() -> new RouteNotFound(
+                                                        "Route với ID " + timelineDto.getRouteId() + " không tồn tại"));
                         existingTimeline.setRoute(route);
                 }
 
                 TimeLineModel savedTimeline = timelineRepository.save(existingTimeline);
+                TimelineDto savedTimelineDto = timelineMapper.toTimelineDto(savedTimeline);
 
-                TimelineDto savedTimelineDto = new TimelineDto(
-                                savedTimeline.getId(),
-                                savedTimeline.getDirection(),
-                                savedTimeline.getDepartureTime(),
-                                savedTimeline.getRoute().getId());
-
-                return ResponseEntity.ok(
-                                new ApiResponse<>("Timeline đã được cập nhật thành công!", savedTimelineDto));
+                return ResponseEntity.ok(new ApiResponse<>("Timeline đã được cập nhật thành công!", savedTimelineDto));
         }
 
         @Override
