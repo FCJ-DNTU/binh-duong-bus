@@ -184,4 +184,23 @@ public class RouteServiceImpl implements RouteService {
 
                 return ResponseEntity.ok(new ApiResponse<>("Danh sách tuyến đường", routeDtos));
         }
+
+        @Override
+        public ResponseEntity<ApiResponse<RouteDto>> getReturnRoute(UUID routeId) {
+                RouteModel currentRoute = routeRepository.findById(routeId)
+                                .orElseThrow(() -> new RouteNotFound(
+                                                "Tuyến đường với ID " + routeId + " không tồn tại"));
+
+                List<RouteModel> matchingRoutes = routeRepository.findByRouteNumber(currentRoute.getRouteNumber());
+
+                // get route which has the same route number except the current route
+                RouteModel returnRoute = matchingRoutes.stream()
+                                .filter(route -> !route.getId().equals(routeId))
+                                .findFirst()
+                                .orElseThrow(() -> new RouteNotFound("Không tìm thấy tuyến lượt về cho tuyến này"));
+
+                RouteDto returnRouteDto = routeMapper.toRouteDto(returnRoute);
+
+                return ResponseEntity.ok(new ApiResponse<>("Thông tin tuyến lượt về", returnRouteDto));
+        }
 }
