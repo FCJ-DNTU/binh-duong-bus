@@ -5,6 +5,18 @@ import 'dart:convert';
 class BusApi {
   final Dio dio = Dio();
 
+  String removeVietnameseAccents(String str) {
+    const vietnamese =
+        'ÀÁÂÃÈÉÊÌÍÒÓÔÕÙÚĂĐĨŨƠàáâãèéêìíòóôõùúăđĩũơĂẮẰẲẴẶắằẳẵặÈÉẸẺẼÊỀẾỂỄỆèéẹẻẽêềếểễệÌÍỊỈĨìíịỉĩÒÓÔÕỌỎỐỒỔỖỘòóôõọỏốồổỗộƠỜỚỢỞỠơờớợởỡÙÚỤỦŨỪỨỰỬỮùúụủũừứựửữỲÝỴỶỸỳýỵỷỹ';
+    const withoutVietnamese =
+        'AAAAEEEIIOOOOUUADIUOaaaaeeeiioooouuadiuoAAAWAWAWAWAWawawawawEIEIEIEEieieieeIIIIiiiOOOOOOOoooooooOOOOooooooUUUUUUUUuuuuuuuuuYYYYYYyyyyyy';
+
+    return str.split('').map((char) {
+      int index = vietnamese.indexOf(char);
+      return index != -1 ? withoutVietnamese[index] : char;
+    }).join();
+  }
+
   Future<List<BusRoute>> getBusRoutes() async {
     try {
       final response = await dio.get(
