@@ -1,6 +1,7 @@
-import 'package:binhduongbus/data/sources/remote/bus_api.dart';
 import 'package:flutter/material.dart';
-import 'package:binhduongbus/data/models/bus_route_model.dart'; 
+import 'package:binhduongbus/data/sources/remote/bus_api.dart';
+import 'package:binhduongbus/data/models/bus_route_model.dart';
+import 'package:intl/intl.dart';
 
 class RouteDetailScreen extends StatefulWidget {
   final String routeId;
@@ -154,32 +155,45 @@ class _RouteDetailScreenState extends State<RouteDetailScreen> {
   }
 
   Widget _buildSchedule() {
+    DateTime now = DateTime.now();
     return GridView.builder(
       gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-        crossAxisCount: 4,
-        crossAxisSpacing: 8.0,
-        mainAxisSpacing: 8.0,
+        crossAxisCount: 6,
+        crossAxisSpacing: 6.0,
+        mainAxisSpacing: 6.0,
+        childAspectRatio: 1.5,
       ),
       itemCount: widget.timelines.length,
       itemBuilder: (context, index) {
+        String departureTime = widget.timelines[index].departureTime;
+        DateTime scheduleTime = DateFormat('HH:mm').parse(departureTime);
+        bool isPast = now.hour > scheduleTime.hour ||
+            (now.hour == scheduleTime.hour && now.minute > scheduleTime.minute);
+        bool isCurrent =
+            now.hour == scheduleTime.hour && now.minute == scheduleTime.minute;
+
         return Container(
+          padding: isCurrent ? const EdgeInsets.all(2.0) : null,
           decoration: BoxDecoration(
-            color: Colors.blue.shade50,
-            borderRadius: BorderRadius.circular(8),
-            border: Border.all(color: Colors.blue.shade200),
+            color: isPast ? Colors.grey.shade300 : Colors.blue.shade400,
+            borderRadius: BorderRadius.circular(isCurrent ? 4 : 8),
+            border: Border.all(
+                color: isPast ? Colors.grey.shade500 : Colors.blue.shade200),
           ),
           child: Center(
             child: Text(
-              widget.timelines[index]
-                  .departureTime,
-              style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+              departureTime,
+              style: TextStyle(
+                fontSize: isCurrent ? 12 : 14,
+                fontWeight: FontWeight.bold,
+                color: isPast ? Colors.grey.shade600 : Colors.white,
+              ),
             ),
           ),
         );
       },
     );
   }
-
 
   Widget _buildStopsList(List<String> stops) {
     return ListView.builder(
@@ -188,33 +202,41 @@ class _RouteDetailScreenState extends State<RouteDetailScreen> {
     );
   }
 
-
   Widget _buildStopItem(int index, List<String> stops) {
     bool isFirst = index == 0;
     bool isLast = index == stops.length - 1;
 
     return Row(
-      crossAxisAlignment: CrossAxisAlignment.start,
+      crossAxisAlignment: CrossAxisAlignment.center,
       children: [
-        Column(
-          children: [
-            if (!isFirst)
-              Container(width: 2, height: 10, color: Colors.grey.shade400),
-            Icon(
-              Icons.circle,
-              color: (isFirst || isLast) ? Colors.blue : Colors.grey.shade400,
-              size: 12,
-            ),
-            if (!isLast)
-              Container(width: 2, height: 10, color: Colors.grey.shade400),
-          ],
+        SizedBox(
+          width: 20,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              if (!isFirst)
+                Container(width: 2, height: 10, color: Colors.grey.shade400),
+              Icon(
+                Icons.circle,
+                color: (isFirst || isLast) ? Colors.blue : Colors.grey.shade400,
+                size: 12,
+              ),
+              if (!isLast)
+                Container(width: 2, height: 10, color: Colors.grey.shade400),
+            ],
+          ),
         ),
-        const SizedBox(width: 20),
-        Text(stops[index], style: const TextStyle(fontSize: 16)),
+        const SizedBox(width: 10),
+        Align(
+          alignment: Alignment.centerLeft, 
+          child: Text(
+            stops[index],
+            style: const TextStyle(fontSize: 16),
+          ),
+        ),
       ],
     );
   }
-
 
   Widget _buildRouteInfo(BusRoute route) {
     return SingleChildScrollView(
@@ -224,59 +246,11 @@ class _RouteDetailScreenState extends State<RouteDetailScreen> {
           const Text('Thông tin tuyến xe',
               style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
           const SizedBox(height: 16),
-          Wrap(
-            spacing: 8.0,
-            runSpacing: 5.0,
-            children: [
-              Row(
-                children: [
-                  const Icon(Icons.monetization_on, color: Colors.blue),
-                  const SizedBox(width: 8),
-                  Text('Giá vé: ${route.routePrice} VND',
-                      style: const TextStyle(fontSize: 16)),
-                ],
-              ),
-              Row(
-                children: [
-                  const Icon(Icons.timelapse, color: Colors.blue),
-                  const SizedBox(width: 8),
-                  Text('Thời gian chạy: ${route.startTime} - ${route.endTime}',
-                      style: const TextStyle(fontSize: 16)),
-                ],
-              ),
-              Row(
-                children: [
-                  const Icon(Icons.directions_walk, color: Colors.blue),
-                  const SizedBox(width: 8),
-                  const Text('Độ dài tuyến: 10 km',
-                      style: TextStyle(fontSize: 16)),
-                ],
-              ),
-              Row(
-                children: [
-                  const Icon(Icons.schedule, color: Colors.blue),
-                  const SizedBox(width: 8),
-                  const Text('Giãn cách tuyến: 29 phút',
-                      style: TextStyle(fontSize: 16)),
-                ],
-              ),
-              Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const Icon(Icons.domain, color: Colors.blue),
-                  const SizedBox(width: 8),
-                  Expanded(
-                    child: Text(
-                      'Đơn vị: Công ty TNHH MTV Xe khách Bình Dương',
-                      style: const TextStyle(fontSize: 16),
-                      softWrap: true,
-                      overflow: TextOverflow.visible,
-                    ),
-                  ),
-                ],
-              )
-            ],
-          ),
+          Text('Giá vé: ${route.routePrice} VND',
+              style: const TextStyle(fontSize: 16)),
+          Text('Thời gian chạy: ${route.startTime} - ${route.endTime}',
+              style: const TextStyle(fontSize: 16)),
+          const Text('Độ dài tuyến: 10 km', style: TextStyle(fontSize: 16)),
         ],
       ),
     );

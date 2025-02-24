@@ -8,7 +8,7 @@ class BusApi {
   Future<List<BusRoute>> getBusRoutes() async {
     try {
       final response = await dio.get(
-          'http://ec2-175-41-188-48.ap-southeast-1.compute.amazonaws.com:8080/api/routes');
+          'http://ec2-13-211-208-72.ap-southeast-2.compute.amazonaws.com:8080/api/routes');
       if (response.statusCode == 200) {
         final List<dynamic> data = response.data['data'];
         return data.map((route) => BusRoute.fromJson(route)).toList();
@@ -23,12 +23,12 @@ class BusApi {
   Future<BusRoute> getRouteDetails(String routeId) async {
     try {
       final response = await dio.get(
-          'http://ec2-175-41-188-48.ap-southeast-1.compute.amazonaws.com:8080/api/routes/$routeId');
+          'http://ec2-13-211-208-72.ap-southeast-2.compute.amazonaws.com:8080/api/routes/$routeId');
       if (response.statusCode == 200) {
         var route = BusRoute.fromJson(response.data['data']);
 
         final stopsResponse = await dio.get(
-            'http://ec2-175-41-188-48.ap-southeast-1.compute.amazonaws.com:8080/api/routes/$routeId/stops');
+            'http://ec2-13-211-208-72.ap-southeast-2.compute.amazonaws.com:8080/api/routes/$routeId/stops');
         if (stopsResponse.statusCode == 200) {
           var stops = stopsResponse.data['data']
               .map<RouteStop>((stop) => RouteStop.fromJson(stop))
@@ -48,7 +48,7 @@ class BusApi {
   Future<List<TimeLine>> getTimelinesForRoute(String routeId) async {
     try {
       final response = await dio.get(
-          'http://ec2-175-41-188-48.ap-southeast-1.compute.amazonaws.com:8080/api/routes/$routeId/timelines');
+          'http://ec2-13-211-208-72.ap-southeast-2.compute.amazonaws.com:8080/api/routes/$routeId/timelines');
       if (response.statusCode == 200) {
         final List<dynamic> data = response.data['data'];
         return data.map((timeline) => TimeLine.fromJson(timeline)).toList();
@@ -61,7 +61,7 @@ class BusApi {
   }
 
   static const String baseUrl =
-      'http://ec2-175-41-188-48.ap-southeast-1.compute.amazonaws.com:8080';
+      'http://ec2-13-211-208-72.ap-southeast-2.compute.amazonaws.com:8080';
 
   Future<List<BusRoute>> searchRoutes(String name) async {
     try {
