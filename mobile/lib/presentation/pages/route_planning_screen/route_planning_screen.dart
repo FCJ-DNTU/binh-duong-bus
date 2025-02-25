@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:flutter_polyline_points/flutter_polyline_points.dart';
+import 'package:get/get_connect/http/src/utils/utils.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:flutter_map_location_marker/flutter_map_location_marker.dart';
 import 'package:location/location.dart';
@@ -164,7 +165,8 @@ class _RoutePlanningScreenState extends State<RoutePlanningScreen> {
                   children: [
                     TileLayer(
                       urlTemplate:
-                          "https://tile.openstreetmap.org/{z}/{x}/{y}.png",
+                          'https://tile.thunderforest.com/atlas/{z}/{x}/{y}.png?apikey=813ea228575b4ccfb96ba6960bb9fb94',
+                      maxZoom: 22,
                     ),
                     CurrentLocationLayer(
                       style: const LocationMarkerStyle(
