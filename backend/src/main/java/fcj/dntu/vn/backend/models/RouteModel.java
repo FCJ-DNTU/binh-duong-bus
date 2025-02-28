@@ -23,40 +23,56 @@ import java.util.UUID;
 @AllArgsConstructor
 @Builder
 public class RouteModel {
-
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
 
-    @Column(name = "route_number", length = 20, nullable = false)
+    @Column(name = "osm_relation_id", nullable = false)
+    private Long osmRelationId;
+
+    @Column(name = "route_number", length = 20)
     private String routeNumber;
 
-    @Column(name = "route_name", length = 255, nullable = false)
+    @Column(name = "route_name", length = 255)
     private String routeName;
 
-    @Column(name = "start_time", nullable = false, length = 20)
-    private LocalTime startTime;
-
-    @Column(name = "end_time", nullable = false, length = 20)
-    private LocalTime endTime;
-
-    @Column(name = "route_price", nullable = false)
+    @Column(name = "route_price")
     private Long routePrice;
 
-    @Column(name = "interval_minutes", nullable = false)
+    @Column(name="operator")
+    private String operator;
+
+    @Column(name = "start_time", length = 20)
+    private LocalTime startTime;
+
+    @Column(name = "end_time", length = 20)
+    private LocalTime endTime;
+
+    @Column(name = "interval_minutes")
     private Integer intervalMinutes;
 
-    @Column(name = "length_km", precision = 5, scale = 2, nullable = false)
+    @Column(name = "length_km", precision = 5, scale = 2)
     private BigDecimal lengthKm;
 
-    @OneToMany(mappedBy="route", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    @OneToMany(mappedBy = "route", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     private Set<BusModel> buses;
 
-    @OneToMany(mappedBy="route", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    @OneToMany(mappedBy = "route", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    @OrderBy("sequence ASC")
     private Set<StopModel> stops;
 
-    @OneToMany(mappedBy="route", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    @OneToMany(mappedBy = "route", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    @OrderBy("departureTime ASC")
     private Set<TimeLineModel> timeLines;
+
+    @ManyToMany
+    @JoinTable(
+            name = "routes_ways",
+            joinColumns = {@JoinColumn(name = "route_id")},
+            inverseJoinColumns = {@JoinColumn(name = "way_id")}
+    )
+    @OrderBy("sequence ASC")
+    private Set<WayModel> ways;
 
     @Column(name = "created_at", nullable = false, updatable = false)
     @CreationTimestamp

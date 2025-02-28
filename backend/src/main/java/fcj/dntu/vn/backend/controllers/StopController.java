@@ -5,18 +5,13 @@ import java.util.UUID;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import fcj.dntu.vn.backend.dtos.StopDto;
 import fcj.dntu.vn.backend.exceptions.responses.ApiResponse;
 import fcj.dntu.vn.backend.services.StopService;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 
 @RestController
 @RequestMapping("api/stops")
@@ -48,6 +43,13 @@ public class StopController {
     @DeleteMapping("/{id}")
     public ResponseEntity<?> deleteStop(@PathVariable UUID id) {
         return stopService.deleteStop(id);
+    }
+
+    @GetMapping("/nearby")
+    public ResponseEntity<ApiResponse<List<StopDto>>> getNearbyStops(
+            @RequestParam double latitude,
+            @RequestParam double longitude) {
+        return stopService.findNearbyStops(latitude, longitude);
     }
 
 }

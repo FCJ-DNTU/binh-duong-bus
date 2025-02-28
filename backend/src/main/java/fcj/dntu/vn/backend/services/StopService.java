@@ -20,4 +20,6 @@ public interface StopService {
 
     ResponseEntity<?> deleteStop(UUID id);
 
+    ResponseEntity<ApiResponse<List<StopDto>>> findNearbyStops(double latitude, double longitude);
+
 }

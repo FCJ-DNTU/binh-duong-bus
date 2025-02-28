@@ -13,7 +13,6 @@ import java.util.UUID;
 @Entity
 @Table(name = "time_lines",
         indexes = {
-                @Index(name = "idx_route_id", columnList = "route_id"),
                 @Index(name = "idx_departure_time", columnList = "departure_time"),
                 @Index(name = "idx_route_direction", columnList = "route_id, direction")
         })
@@ -28,7 +27,7 @@ public class TimeLineModel {
     private UUID id;
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "direction", nullable = false)
+    @Column(name = "direction")
     private DirectionEnum direction;
 
     @Column(name = "departure_time", nullable = false)

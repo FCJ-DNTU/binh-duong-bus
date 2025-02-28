@@ -2,35 +2,34 @@ package fcj.dntu.vn.backend.services.impl;
 
 import java.util.List;
 import java.util.UUID;
-import java.util.stream.Collectors;
 
-import org.locationtech.jts.geom.Point;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
-import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import fcj.dntu.vn.backend.dtos.StopDto;
-import fcj.dntu.vn.backend.exceptions.ErrorResponse;
 
 import fcj.dntu.vn.backend.exceptions.RouteNotFound;
 import fcj.dntu.vn.backend.exceptions.responses.ApiResponse;
+import fcj.dntu.vn.backend.mapper.StopMapper;
 import fcj.dntu.vn.backend.models.RouteModel;
 import fcj.dntu.vn.backend.models.StopModel;
 import fcj.dntu.vn.backend.repositories.RouteRepository;
 import fcj.dntu.vn.backend.repositories.StopRepository;
 import fcj.dntu.vn.backend.services.StopService;
-import fcj.dntu.vn.backend.utils.GeoUtils;
 
 @Service
 public class StopServiceImpl implements StopService {
 
-    @Autowired
-    StopRepository stopRepository;
+    private final RouteRepository routeRepository;
+    private final StopRepository stopRepository;
+    private final StopMapper stopMapper;
 
-    @Autowired
-    RouteRepository routeRepository;
+    public StopServiceImpl(RouteRepository routeRepository, StopRepository stopRepository, StopMapper stopMapper) {
+        this.routeRepository = routeRepository;
+        this.stopRepository = stopRepository;
+        this.stopMapper = stopMapper;
+    }
 
     @Override
     public ResponseEntity<ApiResponse<List<StopDto>>> getAllStops() {
@@ -39,15 +38,7 @@ public class StopServiceImpl implements StopService {
             throw new RouteNotFound("Không có trạm dừng nào trong hệ thống");
         }
 
-        // transfer StopModel to StopDTO
-        List<StopDto> stopDtos = stops.stream().map(stop -> new StopDto(
-                stop.getId(),
-                stop.getStopName(),
-                GeoUtils.pointToLocation(stop.getLocation()),
-                stop.getSequence(),
-                stop.getDirection(),
-                stop.getRoute().getId()))
-                .collect(Collectors.toList());
+        List<StopDto> stopDtos = stopMapper.toStopDtoList(stops);
 
         return ResponseEntity.ok(new ApiResponse<>("Danh sách trạm dừng", stopDtos));
     }
@@ -57,105 +48,70 @@ public class StopServiceImpl implements StopService {
         StopModel stop = stopRepository.findById(id)
                 .orElseThrow(() -> new RouteNotFound("Trạm dừng với ID " + id + " không tồn tại"));
 
-        StopDto stopDto = new StopDto(
-                stop.getId(),
-                stop.getStopName(),
-                GeoUtils.pointToLocation(stop.getLocation()),
-                stop.getSequence(),
-                stop.getDirection(),
-                stop.getRoute().getId());
+        StopDto stopDto = stopMapper.toStopDto(stop);
 
         return ResponseEntity.ok(new ApiResponse<>("Thông tin trạm dừng", stopDto));
     }
 
     @Override
     public ResponseEntity<?> addStop(StopDto stopDto) {
-        try {
-            StopModel stopModel = new StopModel();
-            stopModel.setStopName(stopDto.getStopName());
-            stopModel.setSequence(stopDto.getSequence());
-            stopModel.setDirection(stopDto.getDirection());
+        StopModel stopModel = stopMapper.toStopModel(stopDto);
 
-            if (stopDto.getLocation() != null) {
-                Point location = GeoUtils.locationDtoToPoint(stopDto.getLocation());
-                stopModel.setLocation(location);
-            }
-
-            if (stopDto.getRouteId() != null) {
-                RouteModel route = routeRepository.findById(stopDto.getRouteId())
-                        .orElseThrow(() -> new RouteNotFound("Trạm dừng không tồn tại"));
-                stopModel.setRoute(route);
-            }
-
-            StopModel savedStop = stopRepository.save(stopModel);
-
-            return ResponseEntity.status(HttpStatus.CREATED).body(
-                    new ApiResponse<>("Trạm dừng đã được thêm thành công!", savedStop));
-
-        } catch (Exception e) {
-            String path = ServletUriComponentsBuilder.fromCurrentRequest().toUriString();
-            ErrorResponse errorResponse = new ErrorResponse(
-                    HttpStatus.INTERNAL_SERVER_ERROR,
-                    "Lỗi khi tạo trạm dừng: " + e.getMessage(),
-                    path);
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errorResponse);
+        if (stopDto.getRouteId() != null) {
+            RouteModel route = routeRepository.findById(stopDto.getRouteId())
+                    .orElseThrow(() -> new RouteNotFound("Trạm dừng không tồn tại"));
+            stopModel.setRoute(route);
         }
+
+        StopModel savedStop = stopRepository.save(stopModel);
+
+        return ResponseEntity.status(HttpStatus.CREATED).body(
+                new ApiResponse<>("Trạm dừng đã được thêm thành công!",
+                        stopMapper.toStopDto(savedStop)));
     }
 
     @Override
     public ResponseEntity<?> updateStop(UUID id, StopDto updatedStop) {
-        try {
-            StopModel existingStop = stopRepository.findById(id)
-                    .orElseThrow(() -> new RouteNotFound("Trạm dừng với ID " + id + " không tồn tại"));
+        StopModel existingStop = stopRepository.findById(id)
+                .orElseThrow(() -> new RouteNotFound("Trạm dừng với ID " + id + " không tồn tại"));
 
-            // update
-            existingStop.setStopName(updatedStop.getStopName());
-            existingStop.setSequence(updatedStop.getSequence());
-            existingStop.setDirection(updatedStop.getDirection());
+        // update
+        stopMapper.updateStopFromDto(updatedStop, existingStop);
 
-            if (updatedStop.getLocation() != null) {
-                Point location = GeoUtils.locationDtoToPoint(updatedStop.getLocation());
-                existingStop.setLocation(location);
-            }
-
-            if (updatedStop.getRouteId() != null) {
-                RouteModel route = routeRepository.findById(updatedStop.getRouteId())
-                        .orElseThrow(() -> new RouteNotFound("Tuyến đường không tồn tại"));
-                existingStop.setRoute(route);
-            }
-
-            StopModel savedStop = stopRepository.save(existingStop);
-
-            return ResponseEntity.ok(new ApiResponse<>("Trạm dừng đã được cập nhật thành công!", savedStop));
-
-        } catch (Exception e) {
-            String path = ServletUriComponentsBuilder.fromCurrentRequest().toUriString();
-            ErrorResponse errorResponse = new ErrorResponse(
-                    HttpStatus.INTERNAL_SERVER_ERROR,
-                    "Lỗi khi cập nhật trạm dừng: " + e.getMessage(),
-                    path);
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errorResponse);
+        if (updatedStop.getRouteId() != null) {
+            RouteModel route = routeRepository.findById(updatedStop.getRouteId())
+                    .orElseThrow(() -> new RouteNotFound("Tuyến đường không tồn tại"));
+            existingStop.setRoute(route);
         }
+
+        StopModel savedStop = stopRepository.save(existingStop);
+
+        return ResponseEntity
+                .ok(new ApiResponse<>("Trạm dừng đã được cập nhật thành công!", stopMapper.toStopDto(savedStop)));
     }
 
     @Override
     public ResponseEntity<?> deleteStop(UUID id) {
-        try {
-            StopModel existingModel = stopRepository.findById(id)
-                    .orElseThrow(() -> new RouteNotFound("Trạm dừng với ID " + id + " không tồn tại"));
+        StopModel existingModel = stopRepository.findById(id)
+                .orElseThrow(() -> new RouteNotFound("Trạm dừng với ID " + id + " không tồn tại"));
 
-            stopRepository.delete(existingModel);
+        stopRepository.delete(existingModel);
 
-            return ResponseEntity.ok(new ApiResponse<>("Trạm dừng đã xóa thành công!", null));
+        return ResponseEntity.ok(new ApiResponse<>("Trạm dừng đã xóa thành công!", null));
+    }
 
-        } catch (Exception e) {
-            String path = ServletUriComponentsBuilder.fromCurrentRequest().toUriString();
-            ErrorResponse errorResponse = new ErrorResponse(
-                    HttpStatus.INTERNAL_SERVER_ERROR,
-                    "Lỗi khi xóa trạm dừng: " + e.getMessage(),
-                    path);
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errorResponse);
+    @Override
+    public ResponseEntity<ApiResponse<List<StopDto>>> findNearbyStops(double latitude, double longitude) {
+        List<StopModel> nearbyStops = stopRepository.findStopNearby(latitude, longitude, 500);
+
+        if (nearbyStops.isEmpty()) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(new ApiResponse<>("Không tìm thấy điểm dừng nào trong phạm vi 500m", List.of()));
         }
+
+        List<StopDto> stopDtos = stopMapper.toStopDtoList(nearbyStops);
+
+        return ResponseEntity.ok(new ApiResponse<>("Danh sách điểm dừng gần bạn", stopDtos));
     }
 
 }
