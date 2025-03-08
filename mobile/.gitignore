@@ -45,3 +45,24 @@ app.*.map.json
 /android/app/debug
 /android/app/profile
 /android/app/release
+
+
+# Flutter & iOS/macOS - Ignore generated files
+ios/Flutter/
+ios/.symlinks/
+ios/Pods/
+ios/Podfile.lock
+ios/*.xcworkspace
+ios/*.xcodeproj/project.xcworkspace/
+ios/*.xcodeproj/xcuserdata/
+ios/*.xcodeproj/xcshareddata/
+
+macos/Flutter/
+macos/.symlinks/
+macos/Pods/
+macos/Podfile.lock
+macos/*.xcworkspace
+macos/*.xcodeproj/project.xcworkspace/
+macos/*.xcodeproj/xcuserdata/
+macos/*.xcodeproj/xcshareddata/
+
