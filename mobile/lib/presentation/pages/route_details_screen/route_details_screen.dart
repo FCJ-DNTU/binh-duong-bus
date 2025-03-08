@@ -228,7 +228,7 @@ class _RouteDetailScreenState extends State<RouteDetailScreen> {
         ),
         const SizedBox(width: 10),
         Align(
-          alignment: Alignment.centerLeft, 
+          alignment: Alignment.centerLeft,
           child: Text(
             stops[index],
             style: const TextStyle(fontSize: 16),
@@ -246,11 +246,59 @@ class _RouteDetailScreenState extends State<RouteDetailScreen> {
           const Text('Thông tin tuyến xe',
               style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
           const SizedBox(height: 16),
-          Text('Giá vé: ${route.routePrice} VND',
-              style: const TextStyle(fontSize: 16)),
-          Text('Thời gian chạy: ${route.startTime} - ${route.endTime}',
-              style: const TextStyle(fontSize: 16)),
-          const Text('Độ dài tuyến: 10 km', style: TextStyle(fontSize: 16)),
+          Wrap(
+            spacing: 8.0,
+            runSpacing: 5.0,
+            children: [
+              Row(
+                children: [
+                  const Icon(Icons.monetization_on, color: Colors.blue),
+                  const SizedBox(width: 8),
+                  Text('Giá vé: ${route.routePrice} VND',
+                      style: const TextStyle(fontSize: 16)),
+                ],
+              ),
+              Row(
+                children: [
+                  const Icon(Icons.timelapse, color: Colors.blue),
+                  const SizedBox(width: 8),
+                  Text('Thời gian chạy: ${route.startTime} - ${route.endTime}',
+                      style: const TextStyle(fontSize: 16)),
+                ],
+              ),
+              Row(
+                children: [
+                  const Icon(Icons.directions_walk, color: Colors.blue),
+                  const SizedBox(width: 8),
+                  const Text('Độ dài tuyến: 10 km',
+                      style: TextStyle(fontSize: 16)),
+                ],
+              ),
+              Row(
+                children: [
+                  const Icon(Icons.schedule, color: Colors.blue),
+                  const SizedBox(width: 8),
+                  const Text('Giãn cách tuyến: 29 phút',
+                      style: TextStyle(fontSize: 16)),
+                ],
+              ),
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Icon(Icons.domain, color: Colors.blue),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Text(
+                      'Đơn vị: Công ty TNHH MTV Xe khách Bình Dương',
+                      style: const TextStyle(fontSize: 16),
+                      softWrap: true,
+                      overflow: TextOverflow.visible,
+                    ),
+                  ),
+                ],
+              )
+            ],
+          ),
         ],
       ),
     );

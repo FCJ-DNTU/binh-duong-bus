@@ -7,6 +7,18 @@ class BusApi {
   final Dio dio = Dio();
   final String apiUrl = dotenv.env['API_URL'] ?? '';
 
+  String removeVietnameseAccents(String str) {
+    const vietnamese =
+        'ÀÁÂÃÈÉÊÌÍÒÓÔÕÙÚĂĐĨŨƠàáâãèéêìíòóôõùúăđĩũơĂẮẰẲẴẶắằẳẵặÈÉẸẺẼÊỀẾỂỄỆèéẹẻẽêềếểễệÌÍỊỈĨìíịỉĩÒÓÔÕỌỎỐỒỔỖỘòóôõọỏốồổỗộƠỜỚỢỞỠơờớợởỡÙÚỤỦŨỪỨỰỬỮùúụủũừứựửữỲÝỴỶỸỳýỵỷỹ';
+    const withoutVietnamese =
+        'AAAAEEEIIOOOOUUADIUOaaaaeeeiioooouuadiuoAAAWAWAWAWAWawawawawEIEIEIEEieieieeIIIIiiiOOOOOOOoooooooOOOOooooooUUUUUUUUuuuuuuuuuYYYYYYyyyyyy';
+
+    return str.split('').map((char) {
+      int index = vietnamese.indexOf(char);
+      return index != -1 ? withoutVietnamese[index] : char;
+    }).join();
+  }
+
   Future<List<BusRoute>> getBusRoutes() async {
     try {
       final response = await dio.get('${apiUrl}/api/routes');
@@ -75,6 +87,34 @@ class BusApi {
     } catch (e) {
       print("Lỗi khi gọi API: $e");
       return [];
+    }
+  }
+
+  Future<List<RouteStop>> getReturnRouteStops(String routeId) async {
+    try {
+      final response = await dio.get('${apiUrl}/api/routes/$routeId/return');
+      if (response.statusCode == 200) {
+        final List<dynamic> stopsData = response.data['data']['stops'];
+        return stopsData.map((stop) => RouteStop.fromJson(stop)).toList();
+      } else {
+        throw Exception("Không thể lấy danh sách trạm dừng của lượt về");
+      }
+    } catch (e) {
+      print("Lỗi khi gọi API: ${e.toString()}");
+      throw Exception("Lỗi khi gọi API: ${e.toString()}");
+    }
+  }
+
+  Future<BusRoute> getReturnRoute(String routeId) async {
+    try {
+      final response = await dio.get('$apiUrl/api/routes/$routeId/return');
+      if (response.statusCode == 200) {
+        return BusRoute.fromJson(response.data['data']);
+      } else {
+        throw Exception("Không thể lấy thông tin tuyến lượt về");
+      }
+    } catch (e) {
+      throw Exception("Lỗi khi gọi API lượt về: $e");
     }
   }
 }

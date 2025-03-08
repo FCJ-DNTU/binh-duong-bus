@@ -5,6 +5,7 @@ import 'package:binhduongbus/presentation/pages/route_details_screen/route_detai
 import 'package:binhduongbus/presentation/pages/route_planning_screen/route_planning_screen.dart';
 import 'package:binhduongbus/presentation/pages/setting_screen/setting_screen.dart';
 import 'package:binhduongbus/core/config/app_theme.dart';
+import 'package:diacritic/diacritic.dart'; // Thư viện loại bỏ dấu
 
 class RouteSearchScreen extends StatefulWidget {
   const RouteSearchScreen({Key? key}) : super(key: key);
@@ -39,13 +40,15 @@ class _RouteSearchScreenState extends State<RouteSearchScreen> {
   }
 
   void _onSearchChanged() {
-    String query = _searchController.text.toLowerCase();
+    String query = removeDiacritics(_searchController.text.toLowerCase());
+
     setState(() {
-      _filteredRoutes = _allRoutes
-          .where((route) =>
-              route.routeName.toLowerCase().contains(query) ||
-              route.routeNumber.toLowerCase().contains(query))
-          .toList();
+      _filteredRoutes = _allRoutes.where((route) {
+        String routeName = removeDiacritics(route.routeName.toLowerCase());
+        String routeNumber = removeDiacritics(route.routeNumber.toLowerCase());
+
+        return routeName.contains(query) || routeNumber.contains(query);
+      }).toList();
     });
   }
 
