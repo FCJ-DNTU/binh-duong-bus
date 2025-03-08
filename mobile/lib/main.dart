@@ -31,7 +31,7 @@ class MyApp extends StatelessWidget {
         AppRoutes.home: (context) => const RouteSearchScreen(),
         AppRoutes.notification: (context) => const NotificationScreen(),
         // AppRoutes.routeDetails: (context) => const RouteDetailScreen(title: ''),
-        AppRoutes.routePlanning: (context) => const RoutePlanningScreen(),
+        AppRoutes.routePlanning: (context) => RoutePlanningScreen(),
       },
     );
   }

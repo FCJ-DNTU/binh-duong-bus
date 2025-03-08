@@ -9,6 +9,7 @@ class BusRoute {
   final String routePrice;
   List<RouteStop> routeStops;
   List<TimeLine> timelines;
+  final int intervalMinutes;
 
   BusRoute({
     required this.id,
@@ -19,6 +20,7 @@ class BusRoute {
     required this.routePrice,
     required this.routeStops,
     required this.timelines,
+    required this.intervalMinutes
   });
 
   static String formatTime(String time) {
@@ -59,6 +61,7 @@ class BusRoute {
       endTime: formatTime(json['endTime'] ?? '00:00'),
       routeStops: stops,
       timelines: timelines,
+      intervalMinutes: json['intervalMinutes']
     );
   }
 }

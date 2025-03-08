@@ -1,7 +1,7 @@
+import 'package:binhduongbus/presentation/pages/route_details_screen/route_details_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:binhduongbus/data/sources/remote/bus_api.dart';
 import 'package:binhduongbus/data/models/bus_route_model.dart';
-import 'package:binhduongbus/presentation/pages/route_details_screen/route_details_screen.dart';
 import 'package:binhduongbus/presentation/pages/route_planning_screen/route_planning_screen.dart';
 import 'package:binhduongbus/presentation/pages/setting_screen/setting_screen.dart';
 import 'package:binhduongbus/core/config/app_theme.dart';
@@ -176,6 +176,7 @@ class RouteList extends StatelessWidget {
               '${filteredRoutes[index].startTime} - ${filteredRoutes[index].endTime}',
           price: '${filteredRoutes[index].routePrice} VND',
           routeId: filteredRoutes[index].id,
+          intervalMinutes: filteredRoutes[index].intervalMinutes,
         );
       },
     );
@@ -188,6 +189,7 @@ class RouteCard extends StatelessWidget {
   final String time;
   final String price;
   final String routeId;
+  final int intervalMinutes;
 
   const RouteCard({
     Key? key,
@@ -196,6 +198,7 @@ class RouteCard extends StatelessWidget {
     required this.time,
     required this.price,
     required this.routeId,
+    required this.intervalMinutes,
   }) : super(key: key);
 
   @override
@@ -251,8 +254,7 @@ class RouteCard extends StatelessWidget {
           Navigator.push(
             context,
             MaterialPageRoute(
-              builder: (context) => RouteDetailScreen(
-                  routeId: routeId, title: title, timelines: timelines),
+              builder: (context) => RouteDetailScreen(routeId: routeId, title: title, intervalMinutes: intervalMinutes, timelines: timelines)
             ),
           );
         },
