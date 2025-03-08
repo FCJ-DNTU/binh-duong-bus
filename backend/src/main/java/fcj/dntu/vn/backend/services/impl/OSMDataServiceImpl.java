@@ -7,6 +7,7 @@ import fcj.dntu.vn.backend.repositories.*;
 import fcj.dntu.vn.backend.utils.GeoUtils;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
+import org.locationtech.jts.geom.LineString;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,6 +22,7 @@ import org.springframework.http.*;
 
 import java.time.LocalTime;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 
@@ -32,18 +34,16 @@ public class OSMDataServiceImpl {
     private final StopRepository stopRepository;
     private final RouteRepository routeRepository;
     private final WayRepository wayRepository;
-    private final WayGeometryRepository wayGeometryRepository;
     private final TimeLineRepository timeLineRepository;
 
     @PersistenceContext
     private EntityManager entityManager;
 
     @Autowired
-    public OSMDataServiceImpl(RouteRepository routeRepository, StopRepository stopRepository, WayRepository wayRepository, WayGeometryRepository wayGeometryRepository, TimeLineRepository timeLineRepository) {
+    public OSMDataServiceImpl(RouteRepository routeRepository, StopRepository stopRepository, WayRepository wayRepository, TimeLineRepository timeLineRepository) {
         this.routeRepository = routeRepository;
         this.stopRepository = stopRepository;
         this.wayRepository = wayRepository;
-        this.wayGeometryRepository = wayGeometryRepository;
         this.timeLineRepository = timeLineRepository;
     }
 
@@ -80,9 +80,10 @@ public class OSMDataServiceImpl {
                 routes.add(routeModel);
 
                 // Process timelines
-                List<TimeLineModel> timeLines = processTimeLine(routeModel);
-                assert timeLines != null;
-                timeLineList.addAll(timeLines);
+                if (routeModel.getStartTime() != null && routeModel.getEndTime() != null && routeModel.getIntervalMinutes() != null) {
+                    List<TimeLineModel> timeLines = processTimeLine(routeModel);
+                    timeLineList.addAll(timeLines);
+                }
             }
 
             routeRepository.saveAll(routes);
@@ -100,22 +101,22 @@ public class OSMDataServiceImpl {
 
     private void parseAndSaveMembers(List<RouteModel> routes) {
         try {
+            List<StopModel> stops = new ArrayList<>();
+            List<WayModel> ways = new ArrayList<>();
             for (RouteModel route : routes) {
                 String queryMembers = String.format("""
-                    [out:json];
-                    rel(%d);
-                    nwr(r);
-                    out geom tags;
-                    """, route.getOsmRelationId());
+                        [out:json];
+                        rel(%d);
+                        nwr(r);
+                        out geom tags;
+                        """, route.getOsmRelationId());
 
                 var response = httpRequest(queryMembers);
 
                 JsonNode rootNode = new ObjectMapper().readTree(response.getBody());
                 JsonNode elements = rootNode.path("elements");
 
-                List<StopModel> stops = new ArrayList<>();
-                List<WayModel> ways = new ArrayList<>();
-                List<WayGeometryModel> wayGeometries = new ArrayList<>();
+
                 for (int i = 0; i < elements.size(); i++) {
                     JsonNode member = elements.get(i);
                     if ("node".equals(member.get("type").asText())) {
@@ -123,24 +124,25 @@ public class OSMDataServiceImpl {
                         stops.add(stop);
                     } else if ("way".equals(member.get("type").asText())) {
                         WayModel way = processWay(member, route, i);
-                        ways.add(way);
-                        for (JsonNode geo : member.get("geometry")) {
-                            WayGeometryModel wayGeometry = processWayGeometry(geo, way);
-                            wayGeometries.add(wayGeometry);
+                        if (wayRepository.existsByOsmWayId(way.getOsmWayId())) {
+                            way = wayRepository.findByOsmWayId(way.getOsmWayId());
+                        } else {
+                            ways.add(way);
                         }
+                        if (route.getWays() == null) {
+                            route.setWays(new HashSet<>());
+                        }
+                        route.getWays().add(way);
                     }
                 }
-
-                // Batch save all entities
-                wayRepository.saveAll(ways);
-                log.info("🚀 Save ways successfully");
-
-                wayGeometryRepository.saveAll(wayGeometries);
-                log.info("🚀 Save way geometries successfully");
-
-                stopRepository.saveAll(stops);
-                log.info("🚀 Save stops successfully");
             }
+            // Batch save all entities
+            wayRepository.saveAll(ways);
+            log.info("🚀 Save ways successfully");
+            routeRepository.saveAll(routes);
+            log.info("🚀 Save routes_ways successfully");
+            stopRepository.saveAll(stops);
+            log.info("🚀 Save stops successfully");
             log.info("🚀🚀🚀 Save all data successfully");
         } catch (Exception e) {
             log.error("Error occurred during processing", e);
@@ -157,7 +159,7 @@ public class OSMDataServiceImpl {
         return restTemplate.exchange(OVERPASS_API_URL, HttpMethod.POST, request, String.class);
     }
 
-// Helper method for safely parsing values
+    // Helper method for safely parsing values
     String safeParseText(JsonNode node) {
         return node != null ? node.textValue() : null;
     }
@@ -190,7 +192,23 @@ public class OSMDataServiceImpl {
     private RouteModel processRoute(JsonNode element) {
         try {
             JsonNode tags = element.get("tags");
-            return RouteModel.builder().osmRelationId(element.get("id").asLong()).routeName(safeParseText(tags.get("name"))).routePrice(safeParseLong(tags.get("charge"))).routeNumber(tags.get("ref") != null ? tags.get("ref").asText() : null).operator(safeParseText(tags.get("operator"))).intervalMinutes(safeParseInt(tags.get("interval"))).startTime(safeParseLocalTime(tags.get("opening_hours"), 0)).endTime(safeParseLocalTime(tags.get("opening_hours"), 1)).build();
+            JsonNode bounds = element.get("bounds");
+            double minLat = bounds.get("minlat").asDouble(0);
+            double minLon = bounds.get("minlon").asDouble(0);
+            double maxLat = bounds.get("maxlat").asDouble(0);
+            double maxLon = bounds.get("maxlon").asDouble(0);
+
+            return RouteModel.builder()
+                    .osmRelationId(element.get("id").asLong())
+                    .routeName(safeParseText(tags.get("name")))
+                    .routePrice(safeParseLong(tags.get("charge")))
+                    .routeNumber(tags.get("ref") != null ? tags.get("ref").asText() : null)
+                    .operator(safeParseText(tags.get("operator")))
+                    .intervalMinutes(safeParseInt(tags.get("interval")))
+                    .startTime(safeParseLocalTime(tags.get("opening_hours"), 0))
+                    .endTime(safeParseLocalTime(tags.get("opening_hours"), 1))
+                    .bounds(GeoUtils.createBoundingBox(minLat, minLon, maxLat, maxLon))
+                    .build();
         } catch (Exception e) {
             e.printStackTrace();
             return null;
@@ -201,18 +219,20 @@ public class OSMDataServiceImpl {
         try {
             LocalTime startTime = route.getStartTime();
             LocalTime endTime = route.getEndTime();
-            int intervalMinutes = route.getIntervalMinutes();
             List<TimeLineModel> timeLines = new ArrayList<>();
+            Integer intervalMinutes = route.getIntervalMinutes();
 
+
+            // Normal case: Add times with interval
             while (startTime.isBefore(endTime)) {
                 timeLines.add(TimeLineModel.builder().route(route).departureTime(startTime).build());
                 startTime = startTime.plusMinutes(intervalMinutes);
             }
 
-            return timeLines;
+            return timeLines.isEmpty() ? List.of(TimeLineModel.builder().build()) : timeLines;
         } catch (Exception e) {
             e.printStackTrace();
-            return null;
+            return Collections.singletonList(TimeLineModel.builder().build());
         }
     }
 
@@ -220,7 +240,7 @@ public class OSMDataServiceImpl {
     private StopModel processStop(JsonNode member, RouteModel route, Integer sequence) {
         try {
             String stopName = member.get("tags").get("name").asText();
-            String capitalizedName = stopName.substring(0,1).toUpperCase() + stopName.substring(1);
+            String capitalizedName = stopName.substring(0, 1).toUpperCase() + stopName.substring(1);
 
             StopModel stop = StopModel.builder()
                     .osmNodeId(member.get("id").asLong())
@@ -239,34 +259,24 @@ public class OSMDataServiceImpl {
 
     private WayModel processWay(JsonNode member, RouteModel routeModel, Integer sequence) {
         try {
-            WayModel way = WayModel.builder().sequence(sequence).osmWayId(member.get("id").asLong()).build();
-
-            if (way.getRoutes() == null) {
-                way.setRoutes(new HashSet<>());
+            // create linestring geometry
+            JsonNode geometry = member.get("geometry");
+            List<double[]> coordinates = new ArrayList<>();
+            for (JsonNode node : geometry) {
+                coordinates.add(new double[]{node.get("lat").asDouble(), node.get("lon").asDouble()});
             }
 
-            way.getRoutes().add(routeModel);
-
-            if (routeModel.getWays() == null) {
-                routeModel.setWays(new HashSet<>());
-            }
-
-            routeModel.getWays().add(way);
-
-            return way;
+            LineString lineString = GeoUtils.createLineString(coordinates);
+            // Create WayModel
+            return WayModel.builder()
+                    .sequence(sequence)
+                    .geometry(lineString)
+                    .osmWayId(member.get("id").asLong())
+                    .routes(new HashSet<>())  // Initialize routes set
+                    .build();
         } catch (Exception e) {
             e.printStackTrace();
             return null;
         }
-    }
-
-    private WayGeometryModel processWayGeometry(JsonNode geo, WayModel way) {
-        try {
-            return WayGeometryModel.builder().way(way).location(GeoUtils.createPoint(geo.get("lat").asDouble(), geo.get("lon").asDouble())).build();
-        } catch (Exception e) {
-            e.printStackTrace();
-            return null;
-        }
-
     }
 }

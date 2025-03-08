@@ -5,4 +5,6 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface WayRepository extends JpaRepository<WayModel, Long> {
     boolean existsByOsmWayId(Long osmWayId);
+
+    WayModel findByOsmWayId(Long osmWayId);
 }
