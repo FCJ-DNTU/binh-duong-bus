@@ -83,6 +83,11 @@ public class OSMDataServiceImpl {
                 if (routeModel.getStartTime() != null && routeModel.getEndTime() != null && routeModel.getIntervalMinutes() != null) {
                     List<TimeLineModel> timeLines = processTimeLine(routeModel);
                     timeLineList.addAll(timeLines);
+                    // add each timeline to route.
+                    if(routeModel.getTimeLines() == null) {
+                        routeModel.setTimeLines(new HashSet<>());
+                    }
+                    routeModel.getTimeLines().addAll(timeLines);
                 }
             }
 

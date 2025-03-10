@@ -2,6 +2,8 @@ import 'package:dio/dio.dart';
 import 'package:binhduongbus/data/models/bus_route_model.dart';
 import 'dart:convert';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+  import 'package:latlong2/latlong.dart';
+import 'package:http/http.dart' as http;
 
 class BusApi {
   final Dio dio = Dio();
@@ -22,23 +24,78 @@ class BusApi {
   }
 
   Future<BusRoute> getRouteDetails(String routeId) async {
-    try {
-      final response = await dio.get('${apiUrl}/api/routes/$routeId');
-      if (response.statusCode == 200) {
-        var route = BusRoute.fromJson(response.data['data']);
+    final String apiUrl = dotenv.env['API_URL'] ?? '';
 
-        final stopsResponse =
-            await dio.get('${apiUrl}/api/routes/$routeId/stops');
-        if (stopsResponse.statusCode == 200) {
-          var stops = stopsResponse.data['data']
-              .map<RouteStop>((stop) => RouteStop.fromJson(stop))
-              .toList();
-          route.routeStops = stops;
-        }
-        return route;
-      } else {
+    try {
+      // Make a single API call to get complete route information
+      final response = await http.get(Uri.parse('$apiUrl/api/routes/$routeId'));
+
+      if (response.statusCode != 200) {
         throw Exception("Không thể lấy thông tin chi tiết tuyến xe");
       }
+
+      final jsonResponse = jsonDecode(response.body);
+      final data = jsonResponse['data'];
+
+      // Create BusRoute object from the response
+      BusRoute route = BusRoute.fromJson(data);
+
+      // Extract route segments (ways)
+      List<List<LatLng>> routeSegments = [];
+
+      if (data['ways'] != null) {
+        for (var way in data['ways']) {
+          if (way['geometry'] != null &&
+              way['geometry']['type'] == 'LineString' &&
+              way['geometry']['coordinates'] != null) {
+            final List coordinates = way['geometry']['coordinates'];
+            List<LatLng> segmentPoints = [];
+
+            for (int i = 0; i < coordinates.length; i++) {
+              LatLng point = LatLng(coordinates[i][1], coordinates[i][0]);
+
+              if (segmentPoints.isEmpty || segmentPoints.last != point) {
+                segmentPoints.add(point);
+              }
+            }
+
+            if (segmentPoints.isNotEmpty) {
+              routeSegments.add(segmentPoints);
+            }
+          }
+        }
+      }
+
+      // Extract stop points with coordinates
+      final List<LatLng> stopPointCoordinates = [];
+
+      if (data['stops'] != null) {
+        List<RouteStop> routeStops = [];
+
+        for (var stop in data['stops']) {
+          // Create RouteStop object
+          routeStops.add(RouteStop.fromJson(stop));
+
+          // Extract coordinates if available
+          if (stop['location'] != null &&
+              stop['location']['latitude'] != null &&
+              stop['location']['longitude'] != null) {
+            final double lat = stop['location']['latitude'];
+            final double lng = stop['location']['longitude'];
+            stopPointCoordinates.add(LatLng(lat, lng));
+          }
+        }
+
+        // Update route stops if they're more detailed than what we got from fromJson
+        if (routeStops.isNotEmpty) {
+          route.routeStops = routeStops;
+        }
+      }
+
+      // Update route with geometry data
+      route.updateGeometryData(routeSegments, stopPointCoordinates);
+
+      return route;
     } catch (e) {
       print("Lỗi khi gọi API: ${e.toString()}");
       throw Exception("Lỗi khi gọi API: ${e.toString()}");

@@ -3,9 +3,6 @@ import 'package:binhduongbus/data/sources/remote/bus_api.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
-import 'package:http/http.dart' as http;
-import 'package:flutter_dotenv/flutter_dotenv.dart';
-import 'dart:convert';
 import 'package:intl/intl.dart';
 
 class RouteDetailScreen extends StatefulWidget {
@@ -28,81 +25,36 @@ class RouteDetailScreen extends StatefulWidget {
 
 class _RouteDetailScreenState extends State<RouteDetailScreen> {
   bool isGoingRoute = true;
-  late Future<BusRoute> routeDetails;
+  late BusRoute routeDetails;
   List<List<LatLng>> segments = [];
   List<LatLng> stopPoints = [];
   bool isLoading = true;
   String? error;
-  final DraggableScrollableController _scrollController = DraggableScrollableController();
+  final DraggableScrollableController _scrollController =
+      DraggableScrollableController();
   double _sheetPosition = 0.15; // Initial position (just showing route summary)
 
   @override
   void initState() {
     super.initState();
-    routeDetails = BusApi().getRouteDetails(widget.routeId);
     fetchRouteData();
   }
 
-  Future<void> fetchRouteData() async {
-    final String apiUrl = dotenv.env['API_URL'] ?? '';
+  Future fetchRouteData() async {
+    setState(() {
+      isLoading = true;
+      error = null;
+    });
+
     try {
-      final response = await http.get(Uri.parse('$apiUrl/api/routes/${widget.routeId}'));
+      final route = await BusApi().getRouteDetails(widget.routeId);
 
-      if (response.statusCode == 200) {
-        final jsonResponse = jsonDecode(response.body);
-        final data = jsonResponse['data'];
-
-        // Create multiple polylines instead of one big polyline
-        List<List<LatLng>> routeSegments = [];
-
-        if (data['ways'] != null) {
-          for (var way in data['ways']) {
-            if (way['geometry'] != null &&
-                way['geometry']['type'] == 'LineString' &&
-                way['geometry']['coordinates'] != null) {
-              final List coordinates = way['geometry']['coordinates'];
-              List<LatLng> segmentPoints = [];
-
-              for (int i = 0; i < coordinates.length; i++) {
-                LatLng point = LatLng(coordinates[i][1], coordinates[i][0]);
-
-                if (segmentPoints.isEmpty || segmentPoints.last != point) {
-                  segmentPoints.add(point);
-                }
-              }
-
-              if (segmentPoints.isNotEmpty) {
-                routeSegments.add(segmentPoints);
-              }
-            }
-          }
-        }
-
-        // Extract stop points
-        final List<LatLng> extractedStopPoints = [];
-        if (data['stops'] != null) {
-          for (var stop in data['stops']) {
-            if (stop['location'] != null &&
-                stop['location']['latitude'] != null &&
-                stop['location']['longitude'] != null) {
-              final double lat = stop['location']['latitude'];
-              final double lng = stop['location']['longitude'];
-              extractedStopPoints.add(LatLng(lat, lng));
-            }
-          }
-        }
-
-        setState(() {
-          segments = routeSegments;
-          stopPoints = extractedStopPoints;
-          isLoading = false;
-        });
-      } else {
-        setState(() {
-          error = 'Failed to load route data: ${response.statusCode}';
-          isLoading = false;
-        });
-      }
+      setState(() {
+        routeDetails = route;
+        segments = route.segments;
+        stopPoints = route.stopPoints;
+        isLoading = false;
+      });
     } catch (e) {
       setState(() {
         error = 'Error fetching route data: $e';
@@ -147,8 +99,10 @@ class _RouteDetailScreenState extends State<RouteDetailScreen> {
           // Bottom Draggable Sheet
           DraggableScrollableSheet(
             initialChildSize: _sheetPosition,
-            minChildSize: 0.15, // Minimum height (route summary)
-            maxChildSize: 0.8, // Maximum height (full details)
+            minChildSize: 0.15,
+            // Minimum height (route summary)
+            maxChildSize: 0.8,
+            // Maximum height (full details)
             controller: _scrollController,
             builder: (BuildContext context, ScrollController scrollController) {
               return Container(
@@ -181,54 +135,81 @@ class _RouteDetailScreenState extends State<RouteDetailScreen> {
                     Expanded(
                       child: ListView(
                         controller: scrollController,
-                        padding: EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+                        padding:
+                            EdgeInsets.symmetric(horizontal: 20, vertical: 8),
                         children: [
                           _buildRouteSummary(),
                           const SizedBox(height: 24),
-                          FutureBuilder<BusRoute>(
-                            future: routeDetails,
-                            builder: (context, snapshot) {
-                              if (snapshot.connectionState == ConnectionState.waiting) {
-                                return const Center(child: CircularProgressIndicator());
-                              } else if (snapshot.hasError) {
-                                return Center(child: Text('Lỗi: ${snapshot.error}'));
-                              } else if (!snapshot.hasData) {
-                                return const Center(child: Text('Không có dữ liệu tuyến xe'));
+                          Builder(
+                            builder: (context) {
+                              if (isLoading) {
+                                return const Center(
+                                    child: CircularProgressIndicator());
+                              } else if (error != null) {
+                                return Center(child: Text('Lỗi: $error'));
+                              } else if (routeDetails == null) {
+                                return const Center(
+                                    child: Text('Không có dữ liệu tuyến xe'));
                               } else {
-                                BusRoute route = snapshot.data!;
+                                BusRoute route = routeDetails!;
                                 List<String> stops = isGoingRoute
-                                    ? route.routeStops.map((stop) => stop.stopName).toList()
-                                    : route.routeStops.reversed.map((stop) => stop.stopName).toList();
+                                    ? route.routeStops
+                                        .map((stop) => stop.stopName)
+                                        .toList()
+                                    : route.routeStops.reversed
+                                        .map((stop) => stop.stopName)
+                                        .toList();
 
                                 return Column(
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
                                     Row(
-                                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.spaceBetween,
                                       children: [
                                         Expanded(
                                           child: ElevatedButton(
-                                            onPressed: () => setState(() => isGoingRoute = true),
+                                            onPressed: () => setState(
+                                                () => isGoingRoute = true),
                                             style: ElevatedButton.styleFrom(
-                                              backgroundColor: isGoingRoute ? Color(0xFF007AFF) : Colors.grey.shade200,
-                                              foregroundColor: isGoingRoute ? Colors.white : Colors.black,
-                                              padding: const EdgeInsets.symmetric(vertical: 16),
-                                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                                              backgroundColor: isGoingRoute
+                                                  ? Color(0xFF007AFF)
+                                                  : Colors.grey.shade200,
+                                              foregroundColor: isGoingRoute
+                                                  ? Colors.white
+                                                  : Colors.black,
+                                              padding:
+                                                  const EdgeInsets.symmetric(
+                                                      vertical: 16),
+                                              shape: RoundedRectangleBorder(
+                                                  borderRadius:
+                                                      BorderRadius.circular(8)),
                                             ),
-                                            child: const Text('Xem lượt đi', style: TextStyle(fontSize: 16)),
+                                            child: const Text('Xem lượt đi',
+                                                style: TextStyle(fontSize: 16)),
                                           ),
                                         ),
                                         const SizedBox(width: 12),
                                         Expanded(
                                           child: ElevatedButton(
-                                            onPressed: () => setState(() => isGoingRoute = false),
+                                            onPressed: () => setState(
+                                                () => isGoingRoute = false),
                                             style: ElevatedButton.styleFrom(
-                                              backgroundColor: isGoingRoute ? Colors.grey.shade200 : Color(0xFF007AFF),
-                                              foregroundColor: isGoingRoute ? Colors.black : Colors.white,
-                                              padding: const EdgeInsets.symmetric(vertical: 16),
-                                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                                              backgroundColor: isGoingRoute
+                                                  ? Colors.grey.shade200
+                                                  : Color(0xFF007AFF),
+                                              foregroundColor: isGoingRoute
+                                                  ? Colors.black
+                                                  : Colors.white,
+                                              padding:
+                                                  const EdgeInsets.symmetric(
+                                                      vertical: 16),
+                                              shape: RoundedRectangleBorder(
+                                                  borderRadius:
+                                                      BorderRadius.circular(8)),
                                             ),
-                                            child: const Text('Xem lượt về', style: TextStyle(fontSize: 16)),
+                                            child: const Text('Xem lượt về',
+                                                style: TextStyle(fontSize: 16)),
                                           ),
                                         ),
                                       ],
@@ -246,7 +227,8 @@ class _RouteDetailScreenState extends State<RouteDetailScreen> {
                                             ],
                                             indicatorColor: Color(0xFF007AFF),
                                             labelColor: Color(0xFF007AFF),
-                                            unselectedLabelColor: Colors.grey.shade700,
+                                            unselectedLabelColor:
+                                                Colors.grey.shade700,
                                           ),
                                           const SizedBox(height: 16),
                                           SizedBox(
@@ -266,7 +248,7 @@ class _RouteDetailScreenState extends State<RouteDetailScreen> {
                                 );
                               }
                             },
-                          ),
+                          )
                         ],
                       ),
                     ),
@@ -319,52 +301,52 @@ class _RouteDetailScreenState extends State<RouteDetailScreen> {
     } else {
       return FlutterMap(
         options: MapOptions(
-          initialCenter: stopPoints.isNotEmpty
-              ? stopPoints.first
-              : LatLng(10.0, 106.0),
+          initialCenter:
+              stopPoints.isNotEmpty ? stopPoints.first : LatLng(10.0, 106.0),
           initialZoom: 15,
         ),
         children: [
           TileLayer(
-            urlTemplate: "https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png",
+            urlTemplate:
+                "https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png",
             subdomains: ['a', 'b', 'c'],
           ),
           PolylineLayer(
             polylines: segments
                 .map((points) => Polyline(
-              points: points,
-              color: Color(0xFF007AFF),
-              strokeWidth: 4.0,
-            ))
+                      points: points,
+                      color: Color(0xFF007AFF),
+                      strokeWidth: 4.0,
+                    ))
                 .toList(),
           ),
           MarkerLayer(
             markers: stopPoints
                 .map((stop) => Marker(
-              point: stop,
-              width: 42,
-              height: 42,
-              child: Container(
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  shape: BoxShape.circle,
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withOpacity(0.2),
-                      blurRadius: 4,
-                      offset: Offset(0, 2),
-                    ),
-                  ],
-                ),
-                child: Center(
-                  child: Icon(
-                    Icons.directions_bus,
-                    color: Color(0xFF007AFF),
-                    size: 24,
-                  ),
-                ),
-              ),
-            ))
+                      point: stop,
+                      width: 42,
+                      height: 42,
+                      child: Container(
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          shape: BoxShape.circle,
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withOpacity(0.2),
+                              blurRadius: 4,
+                              offset: Offset(0, 2),
+                            ),
+                          ],
+                        ),
+                        child: Center(
+                          child: Icon(
+                            Icons.directions_bus,
+                            color: Color(0xFF007AFF),
+                            size: 24,
+                          ),
+                        ),
+                      ),
+                    ))
                 .toList(),
           ),
         ],
@@ -392,31 +374,27 @@ class _RouteDetailScreenState extends State<RouteDetailScreen> {
               ),
             ),
             SizedBox(width: 12),
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(widget.title,
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    widget.title,
                     style: TextStyle(
                         fontSize: 17,
                         fontWeight: FontWeight.w600,
-                        color: Colors.black)),
-                Text("${stopPoints.length} stops",
-                    style: TextStyle(fontSize: 13, color: Colors.grey[600])),
-              ],
-            ),
-            Spacer(),
-            Container(
-              padding: EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-              decoration: BoxDecoration(
-                color: Color(0xFF007AFF),
-                borderRadius: BorderRadius.circular(16),
+                        color: Colors.black),
+                    overflow: TextOverflow.ellipsis,
+                    maxLines: 2,
+                  ),
+                  Text(
+                    "${stopPoints.length} stops",
+                    style: TextStyle(fontSize: 13, color: Colors.grey[600]),
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ],
               ),
-              child: Text("GO",
-                  style: TextStyle(
-                      color: Colors.white,
-                      fontWeight: FontWeight.w600,
-                      fontSize: 14)),
-            ),
+            )
           ],
         ),
         SizedBox(height: 12),
@@ -459,14 +437,16 @@ class _RouteDetailScreenState extends State<RouteDetailScreen> {
         DateTime scheduleTime = DateFormat('HH:mm').parse(departureTime);
         bool isPast = now.hour > scheduleTime.hour ||
             (now.hour == scheduleTime.hour && now.minute > scheduleTime.minute);
-        bool isCurrent = now.hour == scheduleTime.hour && now.minute == scheduleTime.minute;
+        bool isCurrent =
+            now.hour == scheduleTime.hour && now.minute == scheduleTime.minute;
 
         return Container(
           padding: isCurrent ? const EdgeInsets.all(2.0) : null,
           decoration: BoxDecoration(
             color: isPast ? Colors.grey.shade300 : Color(0xFF007AFF),
             borderRadius: BorderRadius.circular(isCurrent ? 4 : 8),
-            border: Border.all(color: isPast ? Colors.grey.shade500 : Color(0xFF005BBF)),
+            border: Border.all(
+                color: isPast ? Colors.grey.shade500 : Color(0xFF005BBF)),
           ),
           child: Center(
             child: Text(
@@ -503,20 +483,25 @@ class _RouteDetailScreenState extends State<RouteDetailScreen> {
             width: 20,
             child: Column(
               children: [
-                if (!isFirst) Container(width: 2, height: 20, color: Colors.grey.shade400),
+                if (!isFirst)
+                  Container(width: 2, height: 20, color: Colors.grey.shade400),
                 Container(
                   width: 16,
                   height: 16,
                   decoration: BoxDecoration(
-                    color: (isFirst || isLast) ? Color(0xFF007AFF) : Colors.white,
+                    color:
+                        (isFirst || isLast) ? Color(0xFF007AFF) : Colors.white,
                     border: Border.all(
-                      color: (isFirst || isLast) ? Color(0xFF007AFF) : Colors.grey.shade400,
+                      color: (isFirst || isLast)
+                          ? Color(0xFF007AFF)
+                          : Colors.grey.shade400,
                       width: 2,
                     ),
                     shape: BoxShape.circle,
                   ),
                 ),
-                if (!isLast) Container(width: 2, height: 20, color: Colors.grey.shade400),
+                if (!isLast)
+                  Container(width: 2, height: 20, color: Colors.grey.shade400),
               ],
             ),
           ),
@@ -529,7 +514,9 @@ class _RouteDetailScreenState extends State<RouteDetailScreen> {
                   stops[index],
                   style: TextStyle(
                     fontSize: 16,
-                    fontWeight: (isFirst || isLast) ? FontWeight.bold : FontWeight.normal,
+                    fontWeight: (isFirst || isLast)
+                        ? FontWeight.bold
+                        : FontWeight.normal,
                   ),
                 ),
                 if (isFirst || isLast)
@@ -560,10 +547,13 @@ class _RouteDetailScreenState extends State<RouteDetailScreen> {
               style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
           const SizedBox(height: 16),
           _buildInfoItem(Icons.payments, 'Giá vé', '${route.routePrice} VND'),
-          _buildInfoItem(Icons.access_time, 'Thời gian chạy', '${route.startTime} - ${route.endTime}'),
+          _buildInfoItem(Icons.access_time, 'Thời gian chạy',
+              '${route.startTime} - ${route.endTime}'),
           _buildInfoItem(Icons.straighten, 'Độ dài tuyến', '10 km'),
-          _buildInfoItem(Icons.schedule, 'Tần suất', 'Mỗi ${widget.intervalMinutes} phút'),
-          _buildInfoItem(Icons.calendar_today, 'Ngày hoạt động', 'Thứ 2 - Chủ nhật'),
+          _buildInfoItem(
+              Icons.schedule, 'Tần suất', 'Mỗi ${widget.intervalMinutes} phút'),
+          _buildInfoItem(
+              Icons.calendar_today, 'Ngày hoạt động', 'Thứ 2 - Chủ nhật'),
           const SizedBox(height: 20),
           Container(
             width: double.infinity,

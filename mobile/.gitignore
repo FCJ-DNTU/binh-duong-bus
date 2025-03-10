@@ -56,6 +56,8 @@ ios/*.xcworkspace
 ios/*.xcodeproj/project.xcworkspace/
 ios/*.xcodeproj/xcuserdata/
 ios/*.xcodeproj/xcshareddata/
+ios/Runner.xcworkspace/contents.xcworkspacedata
+.metadata
 
 macos/Flutter/
 macos/.symlinks/
@@ -66,3 +68,9 @@ macos/*.xcodeproj/project.xcworkspace/
 macos/*.xcodeproj/xcuserdata/
 macos/*.xcodeproj/xcshareddata/
 
+android/app/build.gradle.kts
+android/build.gradle.kts
+android/settings.gradle.kts
+ios/Podfile
+ios/Runner.xcodeproj/
+macos/Podfile

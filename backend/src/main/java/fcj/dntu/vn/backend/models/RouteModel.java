@@ -67,7 +67,7 @@ public class RouteModel {
 
     @OneToMany(mappedBy = "route", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     @OrderBy("departureTime ASC")
-    private Set<TimeLineModel> timeLines;
+    private Set<TimeLineModel> timeLines = new HashSet<>();
 
     @ManyToMany(cascade = CascadeType.MERGE)
     @JoinTable(
