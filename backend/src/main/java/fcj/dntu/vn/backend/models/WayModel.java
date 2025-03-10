@@ -4,10 +4,10 @@ import lombok.*;
 import jakarta.persistence.*;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
+import org.locationtech.jts.geom.LineString;
 
 import java.time.LocalDateTime;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 
@@ -29,11 +29,9 @@ public class WayModel {
 
     private Integer sequence;
 
-    @OneToMany(mappedBy = "way", cascade = CascadeType.ALL)
-    private List<WayGeometryModel> geometries;
+    private LineString geometry;
 
-    @ManyToMany(mappedBy = "ways")
-    @Builder.Default
+    @ManyToMany(mappedBy="ways")
     private Set<RouteModel> routes = new HashSet<>();
 
     @Column(name = "created_at", nullable = false, updatable = false)

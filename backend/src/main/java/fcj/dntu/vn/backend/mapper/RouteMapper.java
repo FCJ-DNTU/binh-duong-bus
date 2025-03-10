@@ -1,5 +1,7 @@
 package fcj.dntu.vn.backend.mapper;
 
+import java.awt.*;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -21,7 +23,9 @@ public interface RouteMapper {
         @Mapping(target = "stops", source = "stops", qualifiedByName = "mapStops")
         @Mapping(target = "timelines", source = "timeLines", qualifiedByName = "mapTimelines")
         @Mapping(target = "ways", source = "ways", qualifiedByName = "mapWays")
+        @Mapping(target = "bounds", source = "bounds", qualifiedByName = "polygonToJsonNode")
         RouteDto toRouteDto(RouteModel route);
+
 
         List<RouteDto> toRouteDtoList(List<RouteModel> routes);
 
@@ -76,13 +80,22 @@ public interface RouteMapper {
         }
 
         @Named("mapWays")
-        static List<WayDto> mapWays(Set<WayModel> ways) {
-                return ways == null ? List.of()
-                                : ways.stream()
-                                                .map(way -> new WayDto(
-                                                                way.getId(),
-                                                                way.getName(),
-                                                                way.getSequence()))
-                                                .collect(Collectors.toList());
+        default List<WayDto> mapWays(Set<WayModel> ways) {
+                if (ways == null) {
+                        return null;
+                }
+                return ways.stream()
+                        .map(way -> WayDto.builder()
+                                .id(way.getId())
+                                .name(way.getName())
+                                .sequence(way.getSequence())
+                                .geometry(GeoUtils.lineStringToJsonNode(way.getGeometry()))
+                                .createdAt(way.getCreatedAt())
+                                .updatedAt(way.getUpdatedAt())
+                                .build())
+                        .sorted(Comparator.comparing(WayDto::getSequence))
+                        .collect(Collectors.toList());
         }
+
+
 }

@@ -1,4 +1,5 @@
 import 'package:intl/intl.dart';
+import 'package:latlong2/latlong.dart';
 
 class BusRoute {
   final String id;
@@ -9,6 +10,9 @@ class BusRoute {
   final String routePrice;
   List<RouteStop> routeStops;
   List<TimeLine> timelines;
+  final int intervalMinutes;
+  List<List<LatLng>> segments = [];
+  List<LatLng> stopPoints = [];
 
   BusRoute({
     required this.id,
@@ -19,7 +23,15 @@ class BusRoute {
     required this.routePrice,
     required this.routeStops,
     required this.timelines,
+    required this.intervalMinutes,
+    this.segments = const [],
+    this.stopPoints = const [],
   });
+
+  void updateGeometryData(List<List<LatLng>> newSegments, List<LatLng> newStopPoints) {
+    segments = newSegments;
+    stopPoints = newStopPoints;
+  }
 
   static String formatTime(String time) {
     if (time.isEmpty || time == 'null') {
@@ -59,6 +71,7 @@ class BusRoute {
       endTime: formatTime(json['endTime'] ?? '00:00'),
       routeStops: stops,
       timelines: timelines,
+      intervalMinutes: json['intervalMinutes']
     );
   }
 }

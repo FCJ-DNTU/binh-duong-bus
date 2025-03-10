@@ -4,10 +4,12 @@ import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
+import org.locationtech.jts.geom.Polygon;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
+import java.util.HashSet;
 import java.util.Set;
 import java.util.UUID;
 
@@ -39,7 +41,7 @@ public class RouteModel {
     @Column(name = "route_price")
     private Long routePrice;
 
-    @Column(name="operator")
+    @Column(name = "operator")
     private String operator;
 
     @Column(name = "start_time", length = 20)
@@ -54,25 +56,27 @@ public class RouteModel {
     @Column(name = "length_km", precision = 5, scale = 2)
     private BigDecimal lengthKm;
 
+    private Polygon bounds;
+
     @OneToMany(mappedBy = "route", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     private Set<BusModel> buses;
 
     @OneToMany(mappedBy = "route", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
-    @OrderBy("sequence ASC")
+    @OrderBy("createdAt ASC")
     private Set<StopModel> stops;
 
     @OneToMany(mappedBy = "route", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     @OrderBy("departureTime ASC")
-    private Set<TimeLineModel> timeLines;
+    private Set<TimeLineModel> timeLines = new HashSet<>();
 
-    @ManyToMany
+    @ManyToMany(cascade = CascadeType.MERGE)
     @JoinTable(
             name = "routes_ways",
             joinColumns = {@JoinColumn(name = "route_id")},
             inverseJoinColumns = {@JoinColumn(name = "way_id")}
     )
-    @OrderBy("sequence ASC")
-    private Set<WayModel> ways;
+    @OrderBy("createdAt ASC")
+    private Set<WayModel> ways = new HashSet<>();
 
     @Column(name = "created_at", nullable = false, updatable = false)
     @CreationTimestamp
