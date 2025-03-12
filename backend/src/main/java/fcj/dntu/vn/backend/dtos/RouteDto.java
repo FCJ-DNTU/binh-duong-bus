@@ -5,14 +5,16 @@ import java.time.LocalTime;
 import java.util.List;
 import java.util.UUID;
 
-import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.*;
+import org.locationtech.jts.geom.Polygon;
 
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
+@JsonInclude(JsonInclude.Include.NON_NULL)
 public class RouteDto {
     private UUID id;
     private Long osmRelationId;
@@ -25,8 +27,8 @@ public class RouteDto {
     private Integer intervalMinutes;
     private BigDecimal lengthKm;
     private List<BusDto> buses;
-    private List<StopWithoutRouteIdDto> stops;
-    private List<TimelineWithoutRouteId> timelines;
+    private List<StopDto> stops;
+    private List<TimelineDto> timelines;
     private List<WayDto> ways;
-    private JsonNode bounds;
+    private Polygon bounds;
 }
