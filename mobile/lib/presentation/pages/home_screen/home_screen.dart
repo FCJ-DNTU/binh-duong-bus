@@ -249,12 +249,10 @@ class RouteCard extends StatelessWidget {
           ],
         ),
         onTap: () async {
-          List<TimeLine> timelines =
-              await BusApi().getTimelinesForRoute(routeId);
           Navigator.push(
             context,
             MaterialPageRoute(
-              builder: (context) => RouteDetailScreen(routeId: routeId, title: title, intervalMinutes: intervalMinutes, timelines: timelines)
+              builder: (context) => RouteDetailScreen(routeId: routeId, title: title, intervalMinutes: intervalMinutes)
             ),
           );
         },

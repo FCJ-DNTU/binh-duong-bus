@@ -2,7 +2,7 @@ import 'package:dio/dio.dart';
 import 'package:binhduongbus/data/models/bus_route_model.dart';
 import 'dart:convert';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
-  import 'package:latlong2/latlong.dart';
+import 'package:latlong2/latlong.dart';
 import 'package:http/http.dart' as http;
 
 class BusApi {
@@ -28,13 +28,13 @@ class BusApi {
 
     try {
       // Make a single API call to get complete route information
-      final response = await http.get(Uri.parse('$apiUrl/api/routes/$routeId'));
+      final response = await http.get(Uri.parse('$apiUrl/api/routes/$routeId') );
 
       if (response.statusCode != 200) {
         throw Exception("Không thể lấy thông tin chi tiết tuyến xe");
       }
 
-      final jsonResponse = jsonDecode(response.body);
+      final jsonResponse = jsonDecode(utf8.decode(response.bodyBytes));
       final data = jsonResponse['data'];
 
       // Create BusRoute object from the response
@@ -70,25 +70,13 @@ class BusApi {
       final List<LatLng> stopPointCoordinates = [];
 
       if (data['stops'] != null) {
-        List<RouteStop> routeStops = [];
-
         for (var stop in data['stops']) {
-          // Create RouteStop object
-          routeStops.add(RouteStop.fromJson(stop));
-
           // Extract coordinates if available
-          if (stop['location'] != null &&
-              stop['location']['latitude'] != null &&
-              stop['location']['longitude'] != null) {
-            final double lat = stop['location']['latitude'];
-            final double lng = stop['location']['longitude'];
+          if (stop['location'] != null && stop['location']['coordinates'] != null) {
+            final double lat = stop['location']['coordinates'][1];
+            final double lng = stop['location']['coordinates'][0];
             stopPointCoordinates.add(LatLng(lat, lng));
           }
-        }
-
-        // Update route stops if they're more detailed than what we got from fromJson
-        if (routeStops.isNotEmpty) {
-          route.routeStops = routeStops;
         }
       }
 
