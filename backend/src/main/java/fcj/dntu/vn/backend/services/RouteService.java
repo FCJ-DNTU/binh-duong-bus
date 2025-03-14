@@ -32,4 +32,8 @@ public interface RouteService {
 
     ResponseEntity<ApiResponse<RouteDto>> getReturnRoute(UUID routeId);
 
+    // cache
+    List<RouteOnlyDto> getAllRoutesData();
+
+    RouteDto getRouteByIdData(UUID id);
 }
