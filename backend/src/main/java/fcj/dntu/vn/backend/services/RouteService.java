@@ -31,4 +31,5 @@ public interface RouteService {
     ResponseEntity<ApiResponse<List<RouteDto>>> getRouteByRouteName(String routeName);
 
     ResponseEntity<ApiResponse<RouteDto>> getReturnRoute(UUID routeId);
+
 }

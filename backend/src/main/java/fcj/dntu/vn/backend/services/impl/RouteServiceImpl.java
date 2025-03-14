@@ -3,6 +3,7 @@ package fcj.dntu.vn.backend.services.impl;
 import java.util.List;
 import java.util.UUID;
 
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
@@ -30,8 +31,8 @@ public class RouteServiceImpl implements RouteService {
     private final TimelineMapper timelineMapper;
 
     public RouteServiceImpl(RouteRepository routeRepository, StopRepository stopRepository,
-                            TimeLineRepository timeLineRepository, RouteMapper routeMapper, StopMapper stopMapper,
-                            TimelineMapper timelineMapper) {
+            TimeLineRepository timeLineRepository, RouteMapper routeMapper, StopMapper stopMapper,
+            TimelineMapper timelineMapper) {
         this.routeRepository = routeRepository;
         this.stopRepository = stopRepository;
         this.timeLineRepository = timeLineRepository;
@@ -41,6 +42,7 @@ public class RouteServiceImpl implements RouteService {
     }
 
     @Override
+    @Cacheable(value = "routes", key = "'all_routes'")
     public ResponseEntity<ApiResponse<List<RouteOnlyDto>>> getAllRoutes() {
         List<RouteModel> routes = routeRepository.findAll();
         if (routes.isEmpty()) {
@@ -53,6 +55,7 @@ public class RouteServiceImpl implements RouteService {
     }
 
     @Override
+    @Cacheable(value = "route", key = "#id")
     public ResponseEntity<ApiResponse<RouteDto>> getRouteById(UUID id) {
         RouteDto routeDto = routeRepository.findByIdWithAllRelations(id)
                 .map(routeMapper::toRouteDto)

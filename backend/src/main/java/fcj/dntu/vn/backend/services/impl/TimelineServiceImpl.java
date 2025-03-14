@@ -3,6 +3,8 @@ package fcj.dntu.vn.backend.services.impl;
 import java.util.List;
 import java.util.UUID;
 
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
@@ -33,6 +35,7 @@ public class TimelineServiceImpl implements TimelineService {
         }
 
         @Override
+        @Cacheable(value = "timelines")
         public ResponseEntity<ApiResponse<List<TimelineDto>>> getAllTimelines() {
                 List<TimeLineModel> timelines = timelineRepository.findAll();
                 if (timelines.isEmpty()) {
@@ -45,6 +48,7 @@ public class TimelineServiceImpl implements TimelineService {
         }
 
         @Override
+        @Cacheable(value = "timeline", key = "#id")
         public ResponseEntity<ApiResponse<TimelineDto>> getTimelineById(UUID id) {
                 TimeLineModel timeline = timelineRepository.findById(id)
                                 .orElseThrow(() -> new RouteNotFound(
@@ -56,6 +60,7 @@ public class TimelineServiceImpl implements TimelineService {
         }
 
         @Override
+        @CacheEvict(value = { "timelines", "timeline" }, allEntries = true)
         public ResponseEntity<?> addTimeline(@RequestBody TimelineDto timelineDto) {
                 if (timelineDto.getRouteId() == null) {
                         return ResponseEntity.status(HttpStatus.BAD_REQUEST)
@@ -77,6 +82,7 @@ public class TimelineServiceImpl implements TimelineService {
         }
 
         @Override
+        @CacheEvict(value = { "timelines", "timeline" }, allEntries = true)
         public ResponseEntity<?> updateTimeline(UUID id, TimelineDto timelineDto) {
                 TimeLineModel existingTimeline = timelineRepository.findById(id)
                                 .orElseThrow(() -> new RouteNotFound("Timeline với ID " + id + " không tồn tại"));
@@ -97,6 +103,7 @@ public class TimelineServiceImpl implements TimelineService {
         }
 
         @Override
+        @CacheEvict(value = { "timelines", "timeline" }, allEntries = true)
         public ResponseEntity<?> deleteTimeline(UUID id) {
                 TimeLineModel existingTimeline = timelineRepository.findById(id)
                                 .orElseThrow(() -> new RouteNotFound(

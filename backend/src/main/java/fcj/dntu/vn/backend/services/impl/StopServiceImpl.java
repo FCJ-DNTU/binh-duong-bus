@@ -3,6 +3,8 @@ package fcj.dntu.vn.backend.services.impl;
 import java.util.List;
 import java.util.UUID;
 
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
@@ -32,6 +34,7 @@ public class StopServiceImpl implements StopService {
     }
 
     @Override
+    @Cacheable(value = "stops")
     public ResponseEntity<ApiResponse<List<StopDto>>> getAllStops() {
         List<StopModel> stops = stopRepository.findAll();
         if (stops.isEmpty()) {
@@ -44,6 +47,7 @@ public class StopServiceImpl implements StopService {
     }
 
     @Override
+    @Cacheable(value = "stops", key = "#id")
     public ResponseEntity<ApiResponse<StopDto>> getStopById(UUID id) {
         StopModel stop = stopRepository.findById(id)
                 .orElseThrow(() -> new RouteNotFound("Trạm dừng với ID " + id + " không tồn tại"));
@@ -54,6 +58,7 @@ public class StopServiceImpl implements StopService {
     }
 
     @Override
+    @CacheEvict(value = "stops", allEntries = true)
     public ResponseEntity<?> addStop(StopDto stopDto) {
         StopModel stopModel = stopMapper.toStopModel(stopDto);
 
@@ -71,6 +76,7 @@ public class StopServiceImpl implements StopService {
     }
 
     @Override
+    @CacheEvict(value = "stops", key = "#id")
     public ResponseEntity<?> updateStop(UUID id, StopDto updatedStop) {
         StopModel existingStop = stopRepository.findById(id)
                 .orElseThrow(() -> new RouteNotFound("Trạm dừng với ID " + id + " không tồn tại"));
@@ -91,6 +97,7 @@ public class StopServiceImpl implements StopService {
     }
 
     @Override
+    @CacheEvict(value = "stops", key = "#id")
     public ResponseEntity<?> deleteStop(UUID id) {
         StopModel existingModel = stopRepository.findById(id)
                 .orElseThrow(() -> new RouteNotFound("Trạm dừng với ID " + id + " không tồn tại"));

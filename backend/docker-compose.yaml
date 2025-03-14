@@ -1,10 +1,9 @@
 services:
   db:
-    container_name: 'binh-duong-bus-db'
+    container_name: "binh-duong-bus-db"
     image: postgis/postgis:17-3.5
-    #    image: postgres:17-alpine3.20
     ports:
-      - '5432:5432'
+      - "5432:5432"
     volumes:
       - postgres:/var/lib/postgresql/data
       - ./init:/docker-entrypoint-initdb.d
@@ -13,24 +12,28 @@ services:
       POSTGRES_PASSWORD: changemeinprod!
       POSTGRES_DB: postgres
     healthcheck:
-      test: [ "CMD", "pg_isready", "-U", "postgres" ]
+      test: ["CMD", "pg_isready", "-U", "postgres"]
       interval: 10s
       timeout: 5s
       retries: 5
 
   cache:
     image: redis:7-alpine3.20
-    container_name: 'binh-duong-bus-redis'
+    container_name: "binh-duong-bus-redis"
     ports:
-      - '6379:6379'
+      - "6379:6379"
     command: redis-server --save 20 1 --loglevel warning --requirepass eYVX7EwVmmxKPCDmwMtyKVge8oLd2t81
     volumes:
       - cache:/data
     healthcheck:
-      test: [ "CMD", "redis-cli", "-a", "eYVX7EwVmmxKPCDmwMtyKVge8oLd2t81", "--raw", "incr", "ping" ]
+      test:
+        ["CMD", "redis-cli", "-a", "eYVX7EwVmmxKPCDmwMtyKVge8oLd2t81", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
   server:
-    container_name: 'binh-duong-bus-backend'
+    container_name: "binh-duong-bus-backend"
     build:
       context: .
       target: development
@@ -39,8 +42,8 @@ services:
         - action: rebuild
           path: .
     ports:
-      - '8080:8080' # running port
-      - '8000:8000' # debugging port
+      - "8080:8080" # running port
+      - "8000:8000" # debugging port
     environment:
       SPRING_DATASOURCE_URL: "jdbc:postgresql://db:5432/postgres"
       SPRING_DATASOURCE_USERNAME: postgres

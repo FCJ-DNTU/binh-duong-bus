@@ -1,6 +1,5 @@
 package fcj.dntu.vn.backend.mapper;
 
-import java.awt.*;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Set;
@@ -25,7 +24,6 @@ public interface RouteMapper {
         @Mapping(target = "ways", source = "ways", qualifiedByName = "mapWays")
         @Mapping(target = "bounds", source = "bounds", qualifiedByName = "polygonToJsonNode")
         RouteDto toRouteDto(RouteModel route);
-
 
         List<RouteDto> toRouteDtoList(List<RouteModel> routes);
 
@@ -85,17 +83,16 @@ public interface RouteMapper {
                         return null;
                 }
                 return ways.stream()
-                        .map(way -> WayDto.builder()
-                                .id(way.getId())
-                                .name(way.getName())
-                                .sequence(way.getSequence())
-                                .geometry(GeoUtils.lineStringToJsonNode(way.getGeometry()))
-                                .createdAt(way.getCreatedAt())
-                                .updatedAt(way.getUpdatedAt())
-                                .build())
-                        .sorted(Comparator.comparing(WayDto::getSequence))
-                        .collect(Collectors.toList());
+                                .map(way -> WayDto.builder()
+                                                .id(way.getId())
+                                                .name(way.getName())
+                                                .sequence(way.getSequence())
+                                                .geometry(GeoUtils.lineStringToJsonNode(way.getGeometry()))
+                                                .createdAt(way.getCreatedAt())
+                                                .updatedAt(way.getUpdatedAt())
+                                                .build())
+                                .sorted(Comparator.comparing(WayDto::getSequence))
+                                .collect(Collectors.toList());
         }
-
 
 }

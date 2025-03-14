@@ -13,7 +13,7 @@ import lombok.*;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class RouteDto {
+public class RouteDto{
     private UUID id;
     private Long osmRelationId;
     private String routeNumber;
