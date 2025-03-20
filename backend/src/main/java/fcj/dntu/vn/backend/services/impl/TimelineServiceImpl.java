@@ -1,14 +1,21 @@
 package fcj.dntu.vn.backend.services.impl;
 
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.UUID;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.CachePut;
 import org.springframework.cache.annotation.Cacheable;
+import org.springframework.cache.annotation.Caching;
+import org.springframework.context.ApplicationContext;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.bind.annotation.RequestBody;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 import fcj.dntu.vn.backend.dtos.TimelineDto;
 import fcj.dntu.vn.backend.exceptions.RouteNotFound;
@@ -26,41 +33,64 @@ public class TimelineServiceImpl implements TimelineService {
         private final RouteRepository routeRepository;
         private final TimeLineRepository timelineRepository;
         private final TimelineMapper timelineMapper;
+        private final ApplicationContext applicationContext;
+
+        @Autowired
+        private ObjectMapper objectMapper;
 
         public TimelineServiceImpl(RouteRepository routeRepository, TimeLineRepository timelineRepository,
-                        TimelineMapper timelineMapper) {
+                        TimelineMapper timelineMapper, ApplicationContext applicationContext) {
                 this.routeRepository = routeRepository;
                 this.timelineRepository = timelineRepository;
                 this.timelineMapper = timelineMapper;
+                this.applicationContext = applicationContext;
         }
 
         @Override
-        @Cacheable(value = "timelines")
-        public ResponseEntity<ApiResponse<List<TimelineDto>>> getAllTimelines() {
+        @Cacheable(value = "timelines", key = "'all_timelines'")
+        public List<TimelineDto> getAllTimelinesData() {
+                System.out.println("CACHE MISS: Loading timelines from database...");
                 List<TimeLineModel> timelines = timelineRepository.findAll();
                 if (timelines.isEmpty()) {
                         throw new RouteNotFound("Không có timeline nào trong hệ thống");
                 }
+                return timelineMapper.toTimelineDtoList(timelines);
+        }
 
-                List<TimelineDto> timelineDtos = timelineMapper.toTimelineDtoList(timelines);
-
-                return ResponseEntity.ok(new ApiResponse<>("Danh sách timelines", timelineDtos));
+        @Override
+        public ResponseEntity<ApiResponse<List<TimelineDto>>> getAllTimelines() {
+                TimelineService self = applicationContext.getBean(TimelineService.class);
+                List<TimelineDto> TimelineDtos = self.getAllTimelinesData();
+                return ResponseEntity.ok(new ApiResponse<>("Danh sách timelines", TimelineDtos));
         }
 
         @Override
         @Cacheable(value = "timeline", key = "#id")
-        public ResponseEntity<ApiResponse<TimelineDto>> getTimelineById(UUID id) {
-                TimeLineModel timeline = timelineRepository.findById(id)
-                                .orElseThrow(() -> new RouteNotFound(
-                                                "Timeline với ID " + id + " không tồn tại"));
-
-                TimelineDto timelineDto = timelineMapper.toTimelineDto(timeline);
-
-                return ResponseEntity.ok(new ApiResponse<>("Thông tin timeline", timelineDto));
+        public TimelineDto getTimelineByIdData(UUID id) {
+                return timelineRepository.findById(id)
+                                .map(timelineMapper::toTimelineDto)
+                                .orElseThrow(() -> new RouteNotFound("Timeline với ID " + id + " không tồn tại"));
         }
 
         @Override
-        @CacheEvict(value = { "timelines", "timeline" }, allEntries = true)
+        public ResponseEntity<ApiResponse<TimelineDto>> getTimelineById(UUID id) {
+                TimelineService self = applicationContext.getBean(TimelineService.class);
+                Object cachedData = self.getTimelineByIdData(id);
+
+                TimelineDto timelineDto;
+                if (cachedData instanceof TimelineDto) {
+                        timelineDto = (TimelineDto) cachedData;
+                } else if (cachedData instanceof LinkedHashMap) {
+                        timelineDto = objectMapper.convertValue(cachedData, TimelineDto.class);
+                } else {
+                        throw new RuntimeException("Dữ liệu cache không hợp lệ: " + cachedData.getClass().getName());
+                }
+                return ResponseEntity.ok(new ApiResponse<>("Thông tin trạm dừng", timelineDto));
+        }
+
+        @Override
+        @CacheEvict(value = "timelines", key = "'all_timelines'")
+        @CachePut(value = "timeline", key = "#result.body.data.id")
         public ResponseEntity<?> addTimeline(@RequestBody TimelineDto timelineDto) {
                 if (timelineDto.getRouteId() == null) {
                         return ResponseEntity.status(HttpStatus.BAD_REQUEST)
@@ -82,7 +112,8 @@ public class TimelineServiceImpl implements TimelineService {
         }
 
         @Override
-        @CacheEvict(value = { "timelines", "timeline" }, allEntries = true)
+        @CachePut(value = "timeline", key = "#id")
+        @CacheEvict(value = "timelines", key = "'all_timelines'")
         public ResponseEntity<?> updateTimeline(UUID id, TimelineDto timelineDto) {
                 TimeLineModel existingTimeline = timelineRepository.findById(id)
                                 .orElseThrow(() -> new RouteNotFound("Timeline với ID " + id + " không tồn tại"));
@@ -103,7 +134,10 @@ public class TimelineServiceImpl implements TimelineService {
         }
 
         @Override
-        @CacheEvict(value = { "timelines", "timeline" }, allEntries = true)
+        @Caching(evict = {
+                        @CacheEvict(value = "timeline", key = "#id"),
+                        @CacheEvict(value = "timelines", key = "'all_timelines'")
+        })
         public ResponseEntity<?> deleteTimeline(UUID id) {
                 TimeLineModel existingTimeline = timelineRepository.findById(id)
                                 .orElseThrow(() -> new RouteNotFound(

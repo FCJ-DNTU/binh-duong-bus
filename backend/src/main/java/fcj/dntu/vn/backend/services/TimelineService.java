@@ -20,4 +20,8 @@ public interface TimelineService {
 
     ResponseEntity<?> deleteTimeline(UUID id);
 
+    // cache
+    List<TimelineDto> getAllTimelinesData();
+
+    TimelineDto getTimelineByIdData(UUID id);
 }
