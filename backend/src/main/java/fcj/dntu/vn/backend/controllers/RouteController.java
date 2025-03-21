@@ -14,15 +14,13 @@ import fcj.dntu.vn.backend.dtos.TimelineDto;
 import fcj.dntu.vn.backend.exceptions.responses.ApiResponse;
 import fcj.dntu.vn.backend.models.RouteModel;
 import fcj.dntu.vn.backend.services.RouteService;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 
 @RestController
 @RequestMapping("/api/routes")
 public class RouteController {
 
     @Autowired
-    RouteService routeService;
+    private RouteService routeService;
 
     @GetMapping
     public ResponseEntity<ApiResponse<List<RouteOnlyDto>>> getAllRoutes() {

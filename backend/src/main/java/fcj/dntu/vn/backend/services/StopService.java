@@ -22,4 +22,8 @@ public interface StopService {
 
     ResponseEntity<ApiResponse<List<StopDto>>> findNearbyStops(double latitude, double longitude);
 
+    // cache
+    List<StopDto> getAllStopsData();
+
+    StopDto getStopByIdData(UUID id);
 }

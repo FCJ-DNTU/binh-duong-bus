@@ -1,5 +1,6 @@
 package fcj.dntu.vn.backend.dtos;
 
+import java.io.Serializable;
 import java.math.BigDecimal;
 import java.time.LocalTime;
 import java.util.List;
@@ -14,8 +15,9 @@ import org.locationtech.jts.geom.Polygon;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-@JsonInclude(JsonInclude.Include.NON_NULL)
-public class RouteDto {
+
+public class RouteDto implements Serializable{
+
     private UUID id;
     private Long osmRelationId;
     private String routeNumber;

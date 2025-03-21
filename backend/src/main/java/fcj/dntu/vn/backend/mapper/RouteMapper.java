@@ -1,6 +1,5 @@
 package fcj.dntu.vn.backend.mapper;
 
-import java.awt.*;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Set;
@@ -24,7 +23,6 @@ public interface RouteMapper {
     @Mapping(target = "timelines", source = "timeLines", qualifiedByName = "mapTimelines")
     @Mapping(target = "ways", source = "ways", qualifiedByName = "mapWays")
     RouteDto toRouteDto(RouteModel route);
-
 
     List<RouteDto> toRouteDtoList(List<RouteModel> routes);
 
@@ -85,6 +83,5 @@ public interface RouteMapper {
                         .build())
                 .collect(Collectors.toList());
     }
-
 
 }

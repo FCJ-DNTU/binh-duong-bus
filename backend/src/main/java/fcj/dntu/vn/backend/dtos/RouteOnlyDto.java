@@ -1,5 +1,6 @@
 package fcj.dntu.vn.backend.dtos;
 
+import java.io.Serializable;
 import java.math.BigDecimal;
 import java.time.LocalTime;
 import java.util.UUID;
@@ -9,7 +10,7 @@ import lombok.Setter;
 
 @Getter
 @Setter
-public class RouteOnlyDto {
+public class RouteOnlyDto implements Serializable {
     private UUID id;
     private Long osmRelationId;
     private String routeNumber;
