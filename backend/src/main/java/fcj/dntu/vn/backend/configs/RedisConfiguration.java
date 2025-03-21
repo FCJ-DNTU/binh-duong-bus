@@ -69,11 +69,12 @@ public class RedisConfiguration {
         template.setConnectionFactory(connectionFactory);
 
         ObjectMapper objectMapper = new ObjectMapper();
+        objectMapper.registerModule(new JavaTimeModule());
+
         PolymorphicTypeValidator ptv = BasicPolymorphicTypeValidator.builder()
                 .allowIfSubType(Object.class)
                 .build();
-        objectMapper.activateDefaultTyping(ptv,
-                ObjectMapper.DefaultTyping.NON_FINAL);
+        objectMapper.activateDefaultTyping(ptv, ObjectMapper.DefaultTyping.NON_FINAL);
 
         Jackson2JsonRedisSerializer<Object> serializer = new Jackson2JsonRedisSerializer<>(objectMapper, Object.class);
 

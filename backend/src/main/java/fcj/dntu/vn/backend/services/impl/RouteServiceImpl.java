@@ -89,9 +89,11 @@ public class RouteServiceImpl implements RouteService {
         } else if (cachedData instanceof LinkedHashMap) {
             routeDto = objectMapper.convertValue(cachedData, RouteDto.class);
         } else {
-            throw new RuntimeException("Dữ liệu cache không hợp lệ: " + cachedData.getClass().getName());
+            throw new RuntimeException("Dữ liệu cache không hợp lệ: " +
+                    cachedData.getClass().getName());
         }
-        return ResponseEntity.ok(new ApiResponse<>("Thông tin tuyến đường", routeDto));
+        return ResponseEntity.ok(new ApiResponse<>("Thông tin tuyến đường",
+                routeDto));
     }
 
     @Override
