@@ -15,12 +15,7 @@ public interface RouteRepository extends JpaRepository<RouteModel, UUID> {
 
     boolean existsByOsmRelationId(Long osmRelationId);
 
-    @Query("SELECT r FROM RouteModel r " +
-            "LEFT JOIN FETCH r.buses " +
-            "LEFT JOIN FETCH r.stops " +
-            "LEFT JOIN FETCH r.timeLines " +
-            "LEFT JOIN FETCH r.ways " +
-            "WHERE r.id = :routeId")
+    @Query("SELECT r FROM RouteModel r WHERE r.id = :routeId")
     Optional<RouteModel> findByIdWithAllRelations(@Param("routeId") UUID routeId);
 
     @Query("SELECT DISTINCT r FROM RouteModel r " +

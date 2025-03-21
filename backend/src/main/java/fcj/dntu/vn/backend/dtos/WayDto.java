@@ -3,8 +3,8 @@ package fcj.dntu.vn.backend.dtos;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
-import com.fasterxml.jackson.databind.JsonNode;
 import lombok.*;
+import org.locationtech.jts.geom.LineString;
 
 @Getter
 @Setter
@@ -16,7 +16,7 @@ public class WayDto {
     // osmWayId is explicitly excluded as requested
     private String name;
     private Integer sequence;
-    private JsonNode geometry; // LineString as GeoJSON
+    private LineString geometry;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 }

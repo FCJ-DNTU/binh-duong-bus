@@ -1,5 +1,6 @@
 package fcj.dntu.vn.backend;
 
+import org.n52.jackson.datatype.jts.JtsModule;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.cache.annotation.EnableCaching;
@@ -26,5 +27,10 @@ public class BackendApplication {
 						.allowedHeaders("*");
 			}
 		};
+	}
+
+	@Bean
+	public JtsModule jtsModule(){
+		return new JtsModule();
 	}
 }

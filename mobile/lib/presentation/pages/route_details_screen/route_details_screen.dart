@@ -8,14 +8,12 @@ import 'package:intl/intl.dart';
 class RouteDetailScreen extends StatefulWidget {
   final String routeId;
   final String title;
-  final List<TimeLine> timelines;
   final int intervalMinutes;
 
   const RouteDetailScreen({
     Key? key,
     required this.routeId,
     required this.title,
-    required this.timelines,
     required this.intervalMinutes,
   }) : super(key: key);
 
@@ -33,6 +31,7 @@ class _RouteDetailScreenState extends State<RouteDetailScreen> {
   final DraggableScrollableController _scrollController =
       DraggableScrollableController();
   double _sheetPosition = 0.15; // Initial position (just showing route summary)
+  final MapController _mapController = MapController();
 
   @override
   void initState() {
@@ -71,6 +70,75 @@ class _RouteDetailScreenState extends State<RouteDetailScreen> {
         children: [
           // Map Layer
           _buildMapLayer(),
+
+          // Zoom in and out
+          Positioned(
+            right: 16,
+            top: MediaQuery.of(context).padding.top + 10,
+            child: Container(
+              decoration: BoxDecoration(
+                color: Colors.white.withOpacity(0.9),
+                borderRadius: BorderRadius.circular(8),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.1),
+                    blurRadius: 4,
+                    offset: Offset(0, 2),
+                  ),
+                ],
+              ),
+              child: Column(
+                children: [
+                  // Zoom in button
+                  InkWell(
+                    onTap: () {
+                      final zoom = _mapController.camera.zoom + 1;
+                      _mapController.move(
+                        _mapController.camera.center,
+                        zoom.clamp(5.0, 18.0),
+                      );
+                    },
+                    child: Container(
+                      width: 36,
+                      height: 36,
+                      alignment: Alignment.center,
+                      child: Icon(
+                        Icons.add,
+                        size: 20,
+                        color: Colors.black87,
+                      ),
+                    ),
+                  ),
+                  // Divider between buttons
+                  Container(
+                    height: 1,
+                    width: 36,
+                    color: Colors.black12,
+                  ),
+                  // Zoom out button
+                  InkWell(
+                    onTap: () {
+                      final zoom = _mapController.camera.zoom - 1;
+                      _mapController.move(
+                        _mapController.camera.center,
+                        zoom.clamp(5.0, 18.0),
+                      );
+                    },
+                    child: Container(
+                      width: 36,
+                      height: 36,
+                      alignment: Alignment.center,
+                      child: Icon(
+                        Icons.remove,
+                        size: 20,
+                        color: Colors.black87,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
 
           // Back Button
           Positioned(
@@ -300,10 +368,17 @@ class _RouteDetailScreenState extends State<RouteDetailScreen> {
       );
     } else {
       return FlutterMap(
+        mapController: _mapController,
         options: MapOptions(
           initialCenter:
               stopPoints.isNotEmpty ? stopPoints.first : LatLng(10.0, 106.0),
           initialZoom: 15,
+          minZoom: 5.0,
+          maxZoom: 18.0,
+          interactionOptions: InteractionOptions(
+            flags: InteractiveFlag
+                .all,
+          ),
         ),
         children: [
           TileLayer(
@@ -431,9 +506,9 @@ class _RouteDetailScreenState extends State<RouteDetailScreen> {
         mainAxisSpacing: 6.0,
         childAspectRatio: 1.5,
       ),
-      itemCount: widget.timelines.length,
+      itemCount: routeDetails.timelines.length,
       itemBuilder: (context, index) {
-        String departureTime = widget.timelines[index].departureTime;
+        String departureTime = routeDetails.timelines[index].departureTime;
         DateTime scheduleTime = DateFormat('HH:mm').parse(departureTime);
         bool isPast = now.hour > scheduleTime.hour ||
             (now.hour == scheduleTime.hour && now.minute > scheduleTime.minute);
