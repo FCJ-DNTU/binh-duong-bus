@@ -1,4 +1,6 @@
+import 'package:binhduongbus/presentation/pages/home_screen/new_home_screen.dart';
 import 'package:binhduongbus/presentation/pages/login_screen/login_screen.dart';
+import 'package:binhduongbus/presentation/pages/register_screen/register_screen.dart';
 import 'package:binhduongbus/presentation/pages/route_details_screen/route_details_screen.dart';
 import 'package:binhduongbus/presentation/pages/route_planning_screen/route_planning_screen.dart';
 import 'package:binhduongbus/presentation/pages/splash_screen/splash_screen.dart';
@@ -28,7 +30,8 @@ class MyApp extends StatelessWidget {
       routes: {
         AppRoutes.splash: (context) => const SplashScreen(),
         AppRoutes.login: (context) => const LoginScreen(),
-        AppRoutes.home: (context) => const RouteSearchScreen(),
+        AppRoutes.register: (context) => const RegisterScreen(),
+        AppRoutes.home: (context) => HomeScreen(),
         AppRoutes.notification: (context) => const NotificationScreen(),
         // AppRoutes.routeDetails: (context) => const RouteDetailScreen(title: ''),
         AppRoutes.routePlanning: (context) => RoutePlanningScreen(),

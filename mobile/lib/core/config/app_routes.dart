@@ -6,4 +6,5 @@ class AppRoutes {
   static const String routeDetails = '/routedetails';
   static const String notification = '/notification';
   static const String routePlanning = '/routeplanning';
+  static const String register = '/register';
 }
