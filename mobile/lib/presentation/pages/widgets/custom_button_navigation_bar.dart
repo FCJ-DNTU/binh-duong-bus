@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:binhduongbus/core/config/app_routes.dart';
 
 class CustomBottomNavigationBar extends StatelessWidget {
   final int currentIndex;
@@ -53,7 +54,7 @@ class CustomBottomNavigationBar extends StatelessWidget {
   }) {
     bool isSelected = currentIndex == index;
     return GestureDetector(
-      onTap: () => onTap(index),
+      onTap: () => _onItemTapped(index, context),
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
@@ -70,7 +71,7 @@ class CustomBottomNavigationBar extends StatelessWidget {
   Widget _buildHomeButton(BuildContext context) {
     bool isSelected = currentIndex == 2;
     return GestureDetector(
-      onTap: () => onTap(2),
+      onTap: () => _onItemTapped(2, context),
       child: Container(
         decoration: BoxDecoration(
           color: isSelected ? Colors.blue.shade50 : Colors.transparent,
@@ -85,40 +86,29 @@ class CustomBottomNavigationBar extends StatelessWidget {
       ),
     );
   }
-}
 
-// Example Usage in a StatefulWidget
-class ExamplePage extends StatefulWidget {
-  const ExamplePage({super.key});
+  void _onItemTapped(int index, BuildContext context) {
+    onTap(index);
+    _navigateTo(index, context);
+  }
 
-  @override
-  _ExamplePageState createState() => _ExamplePageState();
-}
-
-class _ExamplePageState extends State<ExamplePage> {
-  int _currentIndex = 2; // Default to home
-
-  final List<Widget> _pages = [
-    // Add your page widgets here
-    const Placeholder(color: Colors.red),
-    const Placeholder(color: Colors.green),
-    const Placeholder(color: Colors.blue),
-    const Placeholder(color: Colors.yellow),
-    const Placeholder(color: Colors.purple),
-  ];
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      body: _pages[_currentIndex],
-      bottomNavigationBar: CustomBottomNavigationBar(
-        currentIndex: _currentIndex,
-        onTap: (index) {
-          setState(() {
-            _currentIndex = index;
-          });
-        },
-      ),
-    );
+  void _navigateTo(int index, BuildContext context) {
+    switch (index) {
+      case 0:
+        Navigator.pushNamed(context, AppRoutes.routePlanning);
+        break;
+      case 1:
+        Navigator.pushNamed(context, AppRoutes.routes);
+        break;
+      case 2:
+        Navigator.pushNamed(context, AppRoutes.home);
+        break;
+      case 3:
+        Navigator.pushNamed(context, AppRoutes.notification);
+        break;
+      case 4:
+        Navigator.pushNamed(context, AppRoutes.settings);
+        break;
+    }
   }
 }
