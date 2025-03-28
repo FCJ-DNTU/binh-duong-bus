@@ -1,10 +1,11 @@
-import 'package:binhduongbus/presentation/pages/login_screen/login_screen.dart';
-import 'package:binhduongbus/presentation/pages/route_details_screen/route_details_screen.dart';
-import 'package:binhduongbus/presentation/pages/route_planning_screen/route_planning_screen.dart';
-import 'package:binhduongbus/presentation/pages/splash_screen/splash_screen.dart';
 import 'package:binhduongbus/presentation/pages/home_screen/home_screen.dart';
+import 'package:binhduongbus/presentation/pages/login_screen/login_screen.dart';
+import 'package:binhduongbus/presentation/pages/register_screen/register_screen.dart';
+import 'package:binhduongbus/presentation/pages/route_planning_screen/route_planning_screen.dart';
+import 'package:binhduongbus/presentation/pages/route_search_screen/route_search_screen.dart';
+import 'package:binhduongbus/presentation/pages/setting_screen/setting_screen.dart';
+import 'package:binhduongbus/presentation/pages/splash_screen/splash_screen.dart';
 import 'package:binhduongbus/presentation/pages/notification_screen/notification_screen.dart';
-import 'package:binhduongbus/presentation/pages/route_details_screen/route_details_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'core/config/app_routes.dart';
@@ -26,11 +27,12 @@ class MyApp extends StatelessWidget {
       theme: AppTheme.lightTheme,
       initialRoute: AppRoutes.splash,
       routes: {
+        AppRoutes.routes: (context) => const RouteSearchScreen(),
         AppRoutes.splash: (context) => const SplashScreen(),
         AppRoutes.login: (context) => const LoginScreen(),
-        AppRoutes.home: (context) => const RouteSearchScreen(),
-        AppRoutes.notification: (context) => const NotificationScreen(),
-        // AppRoutes.routeDetails: (context) => const RouteDetailScreen(title: ''),
+        AppRoutes.register: (context) => const RegisterScreen(),
+        AppRoutes.home: (context) => HomeScreen(),
+        AppRoutes.settings: (context) => const SettingScreen(),
         AppRoutes.routePlanning: (context) => RoutePlanningScreen(),
       },
     );
