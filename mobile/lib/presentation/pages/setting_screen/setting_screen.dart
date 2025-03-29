@@ -1,149 +1,172 @@
-import 'package:binhduongbus/core/config/app_routes.dart';
+import 'package:binhduongbus/presentation/pages/widgets/custom_button_navigation_bar.dart';
 import 'package:flutter/material.dart';
+import 'package:binhduongbus/core/config/app_routes.dart';
 
-class SettingScreen extends StatelessWidget {
+class SettingScreen extends StatefulWidget {
   const SettingScreen({Key? key}) : super(key: key);
+
+  @override
+  State<SettingScreen> createState() => _SettingScreenState();
+}
+
+class _SettingScreenState extends State<SettingScreen> {
+  int _currentIndex = 4;
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        backgroundColor: Colors.blue,
-        title: Row(
-          mainAxisAlignment: MainAxisAlignment.start,
-          children: [
-            const Text(
-              'Hồ sơ',
-              style: TextStyle(fontSize: 24, color: Colors.white),
+      body: Stack(
+        children: [
+          // Background with gradient
+          Container(
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topCenter,
+                end: Alignment.bottomCenter,
+                colors: [
+                  Color(0xFF6A5AE0), // Purple gradient start
+                  Color(0xFF8E7DFF), // Purple gradient end
+                ],
+              ),
             ),
-          ],
-        ),
-      ),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          children: [
-            Row(
-              crossAxisAlignment: CrossAxisAlignment.center,
+          ),
+
+          // Status bar spacer
+          SafeArea(
+            child: Container(
+              padding: EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+              alignment: Alignment.topRight,
+              child: Icon(
+                Icons.edit,
+                color: Colors.white,
+              ),
+            ),
+          ),
+
+          // Main content
+          SafeArea(
+            child: Column(
               children: [
-                CircleAvatar(
-                  radius: 50,
-                  backgroundImage: AssetImage('assets/images/Logo.jpg'),
-                ),
-                const SizedBox(width: 8),
-                Expanded(
+                // Profile Header
+                Center(
                   child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(
-                        'Bình Dương Bus',
-                        style: const TextStyle(
-                            fontSize: 24, fontWeight: FontWeight.bold),
+                      Container(
+                        width: 120,
+                        height: 120,
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          border: Border.all(
+                            color: Colors.white,
+                            width: 4,
+                          ),
+                        ),
+                        child: CircleAvatar(
+                          backgroundImage: AssetImage('assets/images/Logo.jpg'),
+                          radius: 60,
+                        ),
                       ),
-                      const SizedBox(height: 4),
+                      SizedBox(height: 16),
                       Text(
-                        '+81 64546456',
-                        style: const TextStyle(fontSize: 16),
+                        'Binh Duong Bus',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 22,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      SizedBox(height: 8),
+                      Text(
+                        'binhduongbus@email.com',
+                        style: TextStyle(
+                          color: Colors.white70,
+                          fontSize: 16,
+                        ),
                       ),
                     ],
                   ),
                 ),
-                IconButton(
-                  icon: const Icon(Icons.edit),
-                  onPressed: () {
-                    // Code edit
-                  },
+
+                SizedBox(height: 32),
+
+                // Menu Items
+                Expanded(
+                  child: Container(
+                    width: double.infinity,
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.only(
+                        topLeft: Radius.circular(30),
+                        topRight: Radius.circular(30),
+                      ),
+                    ),
+                    child: ListView(
+                      padding:
+                          EdgeInsets.symmetric(horizontal: 16, vertical: 24),
+                      children: [
+                        _buildMenuItem(
+                            Icons.notifications_outlined, 'Thông báo'),
+                        _buildMenuItem(Icons.map_outlined, 'Bản đồ'),
+                        _buildMenuItem(Icons.route_outlined, 'Hành trình'),
+                        _buildMenuItem(Icons.search, 'Tìm đường'),
+
+                        SizedBox(height: 24),
+
+                        // Logout Button
+                        Container(
+                          decoration: BoxDecoration(
+                            color: Color(0xFFFFE5E5),
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          child: ListTile(
+                            leading: Icon(
+                              Icons.logout,
+                              color: Colors.red,
+                            ),
+                            title: Text(
+                              'Đăng xuất',
+                              style: TextStyle(
+                                color: Colors.red,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                            trailing: Icon(
+                              Icons.chevron_right,
+                              color: Colors.red,
+                            ),
+                            onTap: () {
+                              // Logout logic
+                            },
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
                 ),
               ],
             ),
-            const SizedBox(height: 20),
-            const Divider(),
-            const SizedBox(height: 20),
-            _buildCard(
-              context,
-              Icons.notifications,
-              'Thông báo',
-              Colors.blue.shade50,
-              () {
-                Navigator.pushNamed(context, AppRoutes.notification);
-              },
-            ),
-            const SizedBox(height: 10),
-            _buildCard(
-              context,
-              Icons.search,
-              'Tra cứu',
-              Colors.blue.shade50,
-              () {
-                Navigator.pushNamed(context, AppRoutes.routeDetails);
-              },
-            ),
-            const SizedBox(height: 10),
-            _buildCard(
-              context,
-              Icons.directions,
-              'Tìm đường',
-              Colors.blue.shade50,
-              () {
-                Navigator.pushNamed(context, AppRoutes.routeDetails);
-              },
-            ),
-          ],
-        ),
+          ),
+        ],
+      ),
+      bottomNavigationBar: CustomBottomNavigationBar(
+        currentIndex: _currentIndex,
+        onTap: (index) {
+          setState(() {
+            _currentIndex = index;
+          });
+        },
       ),
     );
   }
 
-  Widget _buildCard(
-    BuildContext context,
-    IconData icon,
-    String title,
-    Color color,
-    VoidCallback onTap,
-  ) {
-    return Card(
-      color: color,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(15),
-      ),
-      elevation: 4,
-      child: ListTile(
-        contentPadding: const EdgeInsets.all(16.0),
-        leading: Icon(
-          icon,
-          size: 40,
-          color: Colors.blue,
-        ),
-        title: Text(
-          title,
-          style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-        ),
-        onTap: onTap,
-      ),
-    );
-  }
-}
-
-class NotificationScreen extends StatelessWidget {
-  const NotificationScreen({Key? key}) : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: const Text('Thông báo')),
-      body: const Center(child: Text('Nội dung thông báo')),
-    );
-  }
-}
-
-class SearchScreen extends StatelessWidget {
-  const SearchScreen({Key? key}) : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: const Text('Tra cứu')),
-      body: const Center(child: Text('Nội dung tra cứu')),
+  Widget _buildMenuItem(IconData icon, String text) {
+    return ListTile(
+      leading: Icon(icon),
+      title: Text(text),
+      trailing: Icon(Icons.chevron_right),
+      onTap: () {
+        // Navigation logic
+      },
     );
   }
 }

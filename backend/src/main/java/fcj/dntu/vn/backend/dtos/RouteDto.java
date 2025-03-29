@@ -5,11 +5,16 @@ import java.time.LocalTime;
 import java.util.List;
 import java.util.UUID;
 
-import lombok.Getter;
-import lombok.Setter;
+import com.fasterxml.jackson.annotation.JsonInclude;
+import lombok.*;
+import org.locationtech.jts.geom.Polygon;
 
 @Getter
 @Setter
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
+@JsonInclude(JsonInclude.Include.NON_NULL)
 public class RouteDto {
     private UUID id;
     private Long osmRelationId;
@@ -22,28 +27,8 @@ public class RouteDto {
     private Integer intervalMinutes;
     private BigDecimal lengthKm;
     private List<BusDto> buses;
-    private List<StopWithoutRouteIdDto> stops;
-    private List<TimelineWithoutRouteId> timelines;
+    private List<StopDto> stops;
+    private List<TimelineDto> timelines;
     private List<WayDto> ways;
-
-    public RouteDto(UUID id, Long osmRelationId, String routeNumber, String routeName, LocalTime startTime,
-            LocalTime endTime,
-            Long routePrice, String operator, Integer intervalMinutes, BigDecimal lengthKm, List<BusDto> buses,
-            List<StopWithoutRouteIdDto> stops,
-            List<TimelineWithoutRouteId> timelines, List<WayDto> ways) {
-        this.id = id;
-        this.osmRelationId = osmRelationId;
-        this.routeNumber = routeNumber;
-        this.routeName = routeName;
-        this.startTime = startTime;
-        this.endTime = endTime;
-        this.routePrice = routePrice;
-        this.operator = operator;
-        this.intervalMinutes = intervalMinutes;
-        this.lengthKm = lengthKm;
-        this.buses = buses;
-        this.stops = stops;
-        this.timelines = timelines;
-        this.ways = ways;
-    }
+    private Polygon bounds;
 }

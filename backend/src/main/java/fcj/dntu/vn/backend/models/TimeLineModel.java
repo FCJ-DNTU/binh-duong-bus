@@ -30,7 +30,7 @@ public class TimeLineModel {
     @Column(name = "direction")
     private DirectionEnum direction;
 
-    @Column(name = "departure_time", nullable = false)
+    @Column(name = "departure_time")
     private LocalTime departureTime;
 
     @ManyToOne
