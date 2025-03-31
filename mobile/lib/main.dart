@@ -1,5 +1,8 @@
+import 'package:binhduongbus/presentation/pages/event_screen/event_detail_screen.dart';
+import 'package:binhduongbus/presentation/pages/event_screen/event_list_screen.dart';
 import 'package:binhduongbus/presentation/pages/home_screen/home_screen.dart';
 import 'package:binhduongbus/presentation/pages/login_screen/login_screen.dart';
+import 'package:binhduongbus/presentation/pages/payment_screen/payment_screen.dart';
 import 'package:binhduongbus/presentation/pages/register_screen/register_screen.dart';
 import 'package:binhduongbus/presentation/pages/route_planning_screen/route_planning_screen.dart';
 import 'package:binhduongbus/presentation/pages/route_search_screen/route_search_screen.dart';
@@ -10,6 +13,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'core/config/app_routes.dart';
 import 'core/config/app_theme.dart';
+import 'package:binhduongbus/presentation/pages/favorite_routes_screen/favorite_routes_screen.dart';
 
 void main() async {
   await dotenv.load(fileName: ".env");
@@ -34,6 +38,9 @@ class MyApp extends StatelessWidget {
         AppRoutes.home: (context) => HomeScreen(),
         AppRoutes.settings: (context) => const SettingScreen(),
         AppRoutes.routePlanning: (context) => RoutePlanningScreen(),
+        AppRoutes.favoriteRoutes: (context) => FavoriteRoutesScreen(),
+        AppRoutes.payment: (context) => const EventDetailScreen(),
+        AppRoutes.eventList: (context) => const EventListScreen(),
       },
     );
   }

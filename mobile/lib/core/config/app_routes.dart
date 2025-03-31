@@ -9,4 +9,8 @@ class AppRoutes {
   static const String routePlanning = '/route_planning';
   static const String register = '/register';
   static const String settings = "/settings";
+  static const String favoriteRoutes = "/favorite_routes";
+  static const String payment = "/payment";
+  static const String eventDetail = "/event_detail";
+  static const String eventList = "/event_list";
 }
