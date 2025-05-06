@@ -35,29 +35,21 @@ class _SplashScreenState extends State<SplashScreen> {
                 color: Colors.white,
               ),
             ),
-
             const SizedBox(height: 60),
-
-            // Logo
             ClipRRect(
-              borderRadius: BorderRadius.circular(20), // Bo viền 20px
+              borderRadius: BorderRadius.circular(20),
               child: Image.asset(
                 'assets/images/Logo.jpg',
                 width: 260,
                 height: 260,
-                fit: BoxFit.cover, // Giữ tỉ lệ ảnh
+                fit: BoxFit.cover,
               ),
             ),
-
             const SizedBox(height: 60),
-
-            // Load
             const CircularProgressIndicator(
               valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
             ),
-
             const SizedBox(height: 40),
-
             const Text(
               'Đang Khởi Động',
               style: TextStyle(

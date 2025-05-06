@@ -17,27 +17,23 @@ class _SettingScreenState extends State<SettingScreen> {
     return Scaffold(
       body: Stack(
         children: [
-          // Banner image as background
           Container(
             height: MediaQuery.of(context).size.height * 0.35,
             width: double.infinity,
             decoration: const BoxDecoration(
-              // Sử dụng ảnh banner
               image: DecorationImage(
                 image: AssetImage('assets/images/banner_profile.JPG'),
                 fit: BoxFit.cover,
               ),
-              // Fallback to gradient if image fails to load
               gradient: LinearGradient(
                 begin: Alignment.topCenter,
                 end: Alignment.bottomCenter,
                 colors: [
-                  Color(0xFF0277BD), // Màu xanh nước biển đậm
-                  Color(0xFF039BE5), // Màu xanh nước biển nhạt
+                  Color(0xFF0277BD),
+                  Color(0xFF039BE5),
                 ],
               ),
             ),
-            // Overlay để đảm bảo text dễ đọc
             child: Container(
               decoration: BoxDecoration(
                 gradient: LinearGradient(
@@ -51,8 +47,6 @@ class _SettingScreenState extends State<SettingScreen> {
               ),
             ),
           ),
-
-          // Status bar spacer and edit button
           SafeArea(
             child: Container(
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
@@ -63,18 +57,13 @@ class _SettingScreenState extends State<SettingScreen> {
                   color: Colors.white,
                   size: 24,
                 ),
-                onPressed: () {
-                  // Edit profile logic
-                },
+                onPressed: () {},
               ),
             ),
           ),
-
-          // Main content
           SafeArea(
             child: Column(
               children: [
-                // Profile Header
                 Padding(
                   padding: const EdgeInsets.only(top: 20),
                   child: Center(
@@ -131,10 +120,7 @@ class _SettingScreenState extends State<SettingScreen> {
                     ),
                   ),
                 ),
-
                 const SizedBox(height: 30),
-
-                // Menu Items
                 Expanded(
                   child: Container(
                     width: double.infinity,
@@ -153,7 +139,6 @@ class _SettingScreenState extends State<SettingScreen> {
                             Icons.notifications_outlined,
                             'Thông báo',
                             onTap: () {
-                              // Điều hướng đến trang thông báo
                               Navigator.pushNamed(
                                   context, AppRoutes.notification);
                             },
@@ -163,7 +148,6 @@ class _SettingScreenState extends State<SettingScreen> {
                             Icons.map_outlined,
                             'Bản đồ',
                             onTap: () {
-                              // Điều hướng đến trang home (có bản đồ)
                               Navigator.pushNamed(
                                   context, AppRoutes.routePlanning);
                             },
@@ -173,7 +157,6 @@ class _SettingScreenState extends State<SettingScreen> {
                             Icons.route_outlined,
                             'Tuyến đường',
                             onTap: () {
-                              // Điều hướng đến trang route planning
                               Navigator.pushNamed(context, AppRoutes.routes);
                             },
                           ),
@@ -182,7 +165,6 @@ class _SettingScreenState extends State<SettingScreen> {
                             Icons.search,
                             'Tìm đường',
                             onTap: () {
-                              // Điều hướng đến trang tìm đường
                               Navigator.pushNamed(context, AppRoutes.routes);
                             },
                           ),
@@ -191,7 +173,6 @@ class _SettingScreenState extends State<SettingScreen> {
                             Icons.favorite,
                             'Tuyến đường yêu thích',
                             onTap: () {
-                              // Điều hướng đến trang tuyến đường yêu thích
                               Navigator.pushNamed(
                                   context, AppRoutes.favoriteRoutes);
                             },
@@ -199,7 +180,6 @@ class _SettingScreenState extends State<SettingScreen> {
 
                           const SizedBox(height: 16),
 
-                          // Logout Button - Special styling
                           Container(
                             margin: const EdgeInsets.only(top: 8),
                             decoration: BoxDecoration(
@@ -228,7 +208,6 @@ class _SettingScreenState extends State<SettingScreen> {
                                 size: 24,
                               ),
                               onTap: () {
-                                // Đăng xuất và chuyển đến trang đăng nhập
                                 Navigator.pushNamedAndRemoveUntil(
                                     context, AppRoutes.login, (route) => false);
                               },
@@ -250,7 +229,6 @@ class _SettingScreenState extends State<SettingScreen> {
           setState(() {
             _currentIndex = index;
           });
-          // Handle navigation based on the index
           switch (index) {
             case 0:
               Navigator.pushReplacementNamed(context, AppRoutes.home);
@@ -261,9 +239,7 @@ class _SettingScreenState extends State<SettingScreen> {
             case 2:
               Navigator.pushReplacementNamed(context, AppRoutes.routePlanning);
               break;
-            // case 3 might be another screen
             case 4:
-              // Already on settings screen
               break;
           }
         },

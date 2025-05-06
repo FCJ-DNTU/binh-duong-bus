@@ -74,7 +74,11 @@ flutter:
   assets:
     - assets/images/
     - .env
-
+    - assets/images/avatar_chat.png
+    - assets/images/Logo.jpg
+    - assets/images/khamphatuyenxe.png
+    - assets/images/checklichtrinh.png
+    - assets/images/xemve.png
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/to/resolution-aware-images
 

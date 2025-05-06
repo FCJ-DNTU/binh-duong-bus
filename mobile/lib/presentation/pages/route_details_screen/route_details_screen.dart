@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:intl/intl.dart';
+import 'package:binhduongbus/presentation/pages/payment_screen/payment_screen.dart';
 
 class RouteDetailScreen extends StatefulWidget {
   final String routeId;
@@ -30,7 +31,7 @@ class _RouteDetailScreenState extends State<RouteDetailScreen> {
   String? error;
   final DraggableScrollableController _scrollController =
       DraggableScrollableController();
-  double _sheetPosition = 0.15; // Initial position (just showing route summary)
+  double _sheetPosition = 0.15;
   final MapController _mapController = MapController();
 
   @override
@@ -68,10 +69,7 @@ class _RouteDetailScreenState extends State<RouteDetailScreen> {
       backgroundColor: Colors.white,
       body: Stack(
         children: [
-          // Map Layer
           _buildMapLayer(),
-
-          // Zoom in and out
           Positioned(
             right: 16,
             top: MediaQuery.of(context).padding.top + 10,
@@ -89,7 +87,6 @@ class _RouteDetailScreenState extends State<RouteDetailScreen> {
               ),
               child: Column(
                 children: [
-                  // Zoom in button
                   InkWell(
                     onTap: () {
                       final zoom = _mapController.camera.zoom + 1;
@@ -109,13 +106,11 @@ class _RouteDetailScreenState extends State<RouteDetailScreen> {
                       ),
                     ),
                   ),
-                  // Divider between buttons
                   Container(
                     height: 1,
                     width: 36,
                     color: Colors.black12,
                   ),
-                  // Zoom out button
                   InkWell(
                     onTap: () {
                       final zoom = _mapController.camera.zoom - 1;
@@ -139,8 +134,6 @@ class _RouteDetailScreenState extends State<RouteDetailScreen> {
               ),
             ),
           ),
-
-          // Back Button
           Positioned(
             top: MediaQuery.of(context).padding.top + 10,
             left: 16,
@@ -163,14 +156,10 @@ class _RouteDetailScreenState extends State<RouteDetailScreen> {
               ),
             ),
           ),
-
-          // Bottom Draggable Sheet
           DraggableScrollableSheet(
             initialChildSize: _sheetPosition,
             minChildSize: 0.15,
-            // Minimum height (route summary)
             maxChildSize: 0.8,
-            // Maximum height (full details)
             controller: _scrollController,
             builder: (BuildContext context, ScrollController scrollController) {
               return Container(
@@ -188,7 +177,6 @@ class _RouteDetailScreenState extends State<RouteDetailScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
-                    // Drag handle
                     Container(
                       margin: EdgeInsets.only(top: 12, bottom: 8),
                       width: 40,
@@ -198,8 +186,6 @@ class _RouteDetailScreenState extends State<RouteDetailScreen> {
                         borderRadius: BorderRadius.circular(2),
                       ),
                     ),
-
-                    // Content
                     Expanded(
                       child: ListView(
                         controller: scrollController,
@@ -316,8 +302,62 @@ class _RouteDetailScreenState extends State<RouteDetailScreen> {
                                 );
                               }
                             },
-                          )
+                          ),
                         ],
+                      ),
+                    ),
+                    Padding(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 20, vertical: 16),
+                      child: SizedBox(
+                        width: double.infinity,
+                        child: ElevatedButton(
+                          onPressed: () {
+                            if (routeDetails != null) {
+                              String dateTime = 'Unknown Date';
+                              if (routeDetails!.timelines.isNotEmpty) {
+                                dateTime =
+                                    routeDetails!.timelines.first.departureTime;
+                              }
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => PaymentScreen(),
+                                  settings: RouteSettings(
+                                    arguments: {
+                                      'routeName': widget.title,
+                                      'routeNumber': widget.routeId,
+                                      'dateTime': dateTime,
+                                      'price':
+                                          '${routeDetails!.routePrice} VND',
+                                    },
+                                  ),
+                                ),
+                              );
+                            } else {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(
+                                    content:
+                                        Text('Dữ liệu tuyến chưa sẵn sàng')),
+                              );
+                            }
+                          },
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Color(0xFF007AFF),
+                            padding: EdgeInsets.symmetric(vertical: 16),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                          ),
+                          child: Text(
+                            'Thanh toán',
+                            style: TextStyle(
+                              fontSize: 16,
+                              color: Colors.white,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ),
                       ),
                     ),
                   ],
@@ -376,8 +416,7 @@ class _RouteDetailScreenState extends State<RouteDetailScreen> {
           minZoom: 5.0,
           maxZoom: 18.0,
           interactionOptions: InteractionOptions(
-            flags: InteractiveFlag
-                .all,
+            flags: InteractiveFlag.all,
           ),
         ),
         children: [

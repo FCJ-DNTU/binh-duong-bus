@@ -4,6 +4,7 @@ import 'dart:convert';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:http/http.dart' as http;
+import 'package:flutter/services.dart' show rootBundle;
 
 class BusApi {
   final Dio dio = Dio();
@@ -27,8 +28,7 @@ class BusApi {
     final String apiUrl = dotenv.env['API_URL'] ?? '';
 
     try {
-      // Make a single API call to get complete route information
-      final response = await http.get(Uri.parse('$apiUrl/api/routes/$routeId') );
+      final response = await http.get(Uri.parse('$apiUrl/api/routes/$routeId'));
 
       if (response.statusCode != 200) {
         throw Exception("Không thể lấy thông tin chi tiết tuyến xe");
@@ -37,10 +37,8 @@ class BusApi {
       final jsonResponse = jsonDecode(utf8.decode(response.bodyBytes));
       final data = jsonResponse['data'];
 
-      // Create BusRoute object from the response
       BusRoute route = BusRoute.fromJson(data);
 
-      // Extract route segments (ways)
       List<List<LatLng>> routeSegments = [];
 
       if (data['ways'] != null) {
@@ -66,13 +64,12 @@ class BusApi {
         }
       }
 
-      // Extract stop points with coordinates
       final List<LatLng> stopPointCoordinates = [];
 
       if (data['stops'] != null) {
         for (var stop in data['stops']) {
-          // Extract coordinates if available
-          if (stop['location'] != null && stop['location']['coordinates'] != null) {
+          if (stop['location'] != null &&
+              stop['location']['coordinates'] != null) {
             final double lat = stop['location']['coordinates'][1];
             final double lng = stop['location']['coordinates'][0];
             stopPointCoordinates.add(LatLng(lat, lng));
@@ -80,7 +77,6 @@ class BusApi {
         }
       }
 
-      // Update route with geometry data
       route.updateGeometryData(routeSegments, stopPointCoordinates);
 
       return route;

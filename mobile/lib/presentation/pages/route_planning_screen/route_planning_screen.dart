@@ -36,7 +36,6 @@ class _RoutePlanningScreenState extends State<RoutePlanningScreen> {
     return Scaffold(
       body: Column(
         children: [
-          // Top Input Section
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
             decoration: BoxDecoration(
@@ -89,7 +88,6 @@ class _RoutePlanningScreenState extends State<RoutePlanningScreen> {
             ),
           ),
 
-          // Map Section
           Expanded(
             child: ClipRRect(
               borderRadius: BorderRadius.circular(20),

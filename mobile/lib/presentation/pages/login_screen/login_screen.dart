@@ -12,7 +12,7 @@ class _LoginScreenState extends State<LoginScreen> {
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
   bool _isRememberMe = false;
-  bool _isPasswordVisible = false; // Added to track password visibility
+  bool _isPasswordVisible = false;
 
   @override
   void dispose() {
@@ -34,7 +34,6 @@ class _LoginScreenState extends State<LoginScreen> {
                 mainAxisAlignment: MainAxisAlignment.center,
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
-                  // App Logo
                   Container(
                     width: 180,
                     height: 150,
@@ -44,17 +43,14 @@ class _LoginScreenState extends State<LoginScreen> {
                     ),
                     child: Center(
                       child: Image.asset(
-                        'assets/images/logo.jpg', // Replace with your actual logo image path
+                        'assets/images/logo.jpg',
                         width: 150,
                         height: 130,
                         fit: BoxFit.contain,
                       ),
                     ),
                   ),
-
                   const SizedBox(height: 30),
-
-                  // Title
                   const Text(
                     'Đăng Nhập',
                     style: TextStyle(
@@ -63,10 +59,7 @@ class _LoginScreenState extends State<LoginScreen> {
                       color: Color(0xFF333333),
                     ),
                   ),
-
                   const SizedBox(height: 30),
-
-                  // Email Input
                   TextField(
                     controller: _emailController,
                     decoration: InputDecoration(
@@ -82,13 +75,10 @@ class _LoginScreenState extends State<LoginScreen> {
                       fillColor: Colors.grey[200],
                     ),
                   ),
-
                   const SizedBox(height: 15),
-
-                  // Password Input
                   TextField(
                     controller: _passwordController,
-                    obscureText: !_isPasswordVisible, // Toggle based on state
+                    obscureText: !_isPasswordVisible,
                     decoration: InputDecoration(
                       hintText: 'Mật khẩu',
                       hintStyle: const TextStyle(color: Colors.grey),
@@ -103,8 +93,7 @@ class _LoginScreenState extends State<LoginScreen> {
                         ),
                         onPressed: () {
                           setState(() {
-                            _isPasswordVisible =
-                                !_isPasswordVisible; // Toggle visibility
+                            _isPasswordVisible = !_isPasswordVisible;
                           });
                         },
                       ),
@@ -116,10 +105,7 @@ class _LoginScreenState extends State<LoginScreen> {
                       fillColor: Colors.grey[200],
                     ),
                   ),
-
                   const SizedBox(height: 15),
-
-                  // Remember Me and Forgot Password Row
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
@@ -139,9 +125,7 @@ class _LoginScreenState extends State<LoginScreen> {
                         ],
                       ),
                       TextButton(
-                        onPressed: () {
-                          // Forgot password logic
-                        },
+                        onPressed: () {},
                         child: const Text(
                           'Quên mật khẩu?',
                           style: TextStyle(color: Colors.red),
@@ -149,10 +133,7 @@ class _LoginScreenState extends State<LoginScreen> {
                       ),
                     ],
                   ),
-
                   const SizedBox(height: 25),
-
-                  // Login Button
                   ElevatedButton(
                     onPressed: () {
                       Navigator.pushNamed(context, AppRoutes.home);
@@ -173,10 +154,7 @@ class _LoginScreenState extends State<LoginScreen> {
                       ),
                     ),
                   ),
-
                   const SizedBox(height: 30),
-
-                  // Divider or Login with
                   Row(
                     children: [
                       Expanded(child: Divider(color: Colors.grey[300])),
@@ -191,18 +169,12 @@ class _LoginScreenState extends State<LoginScreen> {
                       Expanded(child: Divider(color: Colors.grey[300])),
                     ],
                   ),
-
                   const SizedBox(height: 20),
-
-                  // Social Login Buttons
                   Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      // Google Login
                       GestureDetector(
-                        onTap: () {
-                          // Google login logic
-                        },
+                        onTap: () {},
                         child: Container(
                           padding: const EdgeInsets.all(12),
                           decoration: const BoxDecoration(
@@ -217,12 +189,8 @@ class _LoginScreenState extends State<LoginScreen> {
                         ),
                       ),
                       const SizedBox(width: 30),
-
-                      // Facebook Login
                       GestureDetector(
-                        onTap: () {
-                          // Facebook login logic
-                        },
+                        onTap: () {},
                         child: Container(
                           padding: const EdgeInsets.all(12),
                           decoration: const BoxDecoration(
@@ -238,10 +206,7 @@ class _LoginScreenState extends State<LoginScreen> {
                       ),
                     ],
                   ),
-
                   const SizedBox(height: 20),
-
-                  // Sign Up Link
                   Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
@@ -261,7 +226,6 @@ class _LoginScreenState extends State<LoginScreen> {
                       ),
                     ],
                   ),
-
                   const SizedBox(height: 20),
                 ],
               ),

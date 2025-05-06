@@ -6,7 +6,6 @@ class EventListScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Sample list of events (you can replace this with actual data from an API or database)
     final List<Map<String, String>> events = [
       {
         'title': 'Giảm giá lên đến 50% khi thanh toán bằng thẻ tín dụng',
@@ -27,7 +26,6 @@ class EventListScreen extends StatelessWidget {
         leading: IconButton(
           icon: const Icon(Icons.arrow_back, color: Colors.black),
           onPressed: () {
-            // Pop all screens until we reach the HomeScreen
             Navigator.popUntil(context, (route) {
               return route.settings.name == '/home';
             });
@@ -67,7 +65,6 @@ class EventListScreen extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // Event Image with Gradient Overlay
                   Stack(
                     children: [
                       ClipRRect(
@@ -94,7 +91,6 @@ class EventListScreen extends StatelessWidget {
                           },
                         ),
                       ),
-                      // Gradient overlay for better text readability
                       Positioned.fill(
                         child: Container(
                           decoration: BoxDecoration(
@@ -112,7 +108,6 @@ class EventListScreen extends StatelessWidget {
                           ),
                         ),
                       ),
-                      // Discount Badge
                       Positioned(
                         top: 16,
                         right: 16,
@@ -145,7 +140,6 @@ class EventListScreen extends StatelessWidget {
                       ),
                     ],
                   ),
-                  // Event Content
                   Padding(
                     padding: const EdgeInsets.all(20.0),
                     child: Column(

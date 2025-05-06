@@ -25,7 +25,6 @@ class EventDetailScreen extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Event Image with Discount Tag
               Stack(
                 children: [
                   ClipRRect(
@@ -50,7 +49,6 @@ class EventDetailScreen extends StatelessWidget {
                       },
                     ),
                   ),
-                  // Gradient Overlay for better text readability
                   Positioned.fill(
                     child: Container(
                       decoration: BoxDecoration(
@@ -66,7 +64,6 @@ class EventDetailScreen extends StatelessWidget {
                       ),
                     ),
                   ),
-                  // Discount Tag
                   Positioned(
                     top: 16,
                     left: 16,
@@ -134,25 +131,21 @@ class EventDetailScreen extends StatelessWidget {
                 ],
               ),
               const SizedBox(height: 16),
-              // Event Description Title
               const Text(
                 'Giảm giá lên đến 50% khi thanh toán bằng thẻ tín dụng',
                 style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
               ),
               const SizedBox(height: 8),
-              // Event Description
               const Text(
                 'Giảm giá đặc biệt lên đến 50% khi mua vé vào thứ Ba.\nCác điều khoản và điều kiện để mua vé giảm giá:\n1. Vé mua vé trực tuyến hoặc tại các điểm bán vé chính thức.\n2. Giảm giá chỉ áp dụng cho các chuyến đi từ thứ Ba đến thứ Năm.\n3. Khuyến mãi này có hiệu lực đến hết ngày 31 tháng 12 năm 2025.',
                 style: TextStyle(fontSize: 14, color: Colors.black87),
               ),
               const SizedBox(height: 16),
-              // Additional Conditions Title
               const Text(
                 'Các điều khoản và điều kiện để mua vé giảm giá:',
                 style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
               ),
               const SizedBox(height: 8),
-              // Additional Conditions List
               const Text(
                 '1. Vé mua vé trực tuyến hoặc tại các điểm bán vé chính thức.\n2. Giảm giá chỉ áp dụng cho các chuyến đi từ thứ Ba đến thứ Năm.\n3. Khuyến mãi này có hiệu lực đến hết ngày 31 tháng 12 năm 2025.',
                 style: TextStyle(fontSize: 14, color: Colors.black87),

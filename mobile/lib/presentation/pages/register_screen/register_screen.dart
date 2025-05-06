@@ -39,7 +39,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 mainAxisAlignment: MainAxisAlignment.center,
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
-                  // App Logo
                   Container(
                     width: 180,
                     height: 150,
@@ -49,17 +48,14 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     ),
                     child: Center(
                       child: Image.asset(
-                        'assets/images/logo.jpg', // Replace with your actual logo image path
+                        'assets/images/logo.jpg',
                         width: 150,
                         height: 130,
                         fit: BoxFit.contain,
                       ),
                     ),
                   ),
-
                   const SizedBox(height: 30),
-
-                  // Title
                   const Text(
                     'Đăng Ký',
                     style: TextStyle(
@@ -68,10 +64,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                       color: Color(0xFF333333),
                     ),
                   ),
-
                   const SizedBox(height: 30),
-
-                  // Full Name Input
                   TextField(
                     controller: _fullNameController,
                     decoration: InputDecoration(
@@ -87,10 +80,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                       fillColor: Colors.grey[200],
                     ),
                   ),
-
                   const SizedBox(height: 15),
-
-                  // Email Input
                   TextField(
                     controller: _emailController,
                     decoration: InputDecoration(
@@ -106,10 +96,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                       fillColor: Colors.grey[200],
                     ),
                   ),
-
                   const SizedBox(height: 15),
-
-                  // Phone Number Input
                   TextField(
                     controller: _phoneController,
                     keyboardType: TextInputType.phone,
@@ -126,10 +113,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                       fillColor: Colors.grey[200],
                     ),
                   ),
-
                   const SizedBox(height: 15),
-
-                  // Password Input
                   TextField(
                     controller: _passwordController,
                     obscureText: !_isPasswordVisible,
@@ -159,10 +143,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                       fillColor: Colors.grey[200],
                     ),
                   ),
-
                   const SizedBox(height: 20),
-
-                  // Terms and Conditions Checkbox
                   Row(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
@@ -198,22 +179,17 @@ class _RegisterScreenState extends State<RegisterScreen> {
                       ),
                     ],
                   ),
-
                   const SizedBox(height: 60),
-
-                  // Register Button
                   ElevatedButton(
                     onPressed: _isTermsAccepted
                         ? () {
-                            // Register logic
                             Navigator.pushNamed(context, AppRoutes.home);
                           }
                         : null,
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.black, // Always black
-                      disabledBackgroundColor:
-                          Colors.black, // Ensure black when disabled
-                      foregroundColor: Colors.white, // Ensure white text
+                      backgroundColor: Colors.black,
+                      disabledBackgroundColor: Colors.black,
+                      foregroundColor: Colors.white,
                       minimumSize: const Size(double.infinity, 50),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(10),
@@ -223,15 +199,12 @@ class _RegisterScreenState extends State<RegisterScreen> {
                       'Đăng Ký',
                       style: TextStyle(
                         fontSize: 16,
-                        color: Colors.white, // Always white
+                        color: Colors.white,
                         fontWeight: FontWeight.bold,
                       ),
                     ),
                   ),
-
                   const SizedBox(height: 20),
-
-                  // Login Link
                   Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
@@ -251,7 +224,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
                       ),
                     ],
                   ),
-
                   const SizedBox(height: 20),
                 ],
               ),

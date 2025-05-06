@@ -18,7 +18,6 @@ class NotificationScreen extends StatelessWidget {
         padding: const EdgeInsets.all(16.0),
         child: ListView(
           children: [
-    
             _buildNotificationCard(
               context,
               Icons.directions_bus,
@@ -26,21 +25,18 @@ class NotificationScreen extends StatelessWidget {
               'Từ 21/05 Bình Mỹ (Củ Chi) - cầu Phú Cường... Từ 07/08/2025',
             ),
             const SizedBox(height: 10),
-      
             _buildNotificationCard(
               context,
               Icons.wb_sunny,
               'Xe bus hoạt động dịp lễ',
               'Thông báo kế hoạch nghỉ lễ hoạt động của tuyến xe bus...',
             ),
-          
           ],
         ),
       ),
     );
   }
 
-  // Widget để tạo mỗi thông báo
   Widget _buildNotificationCard(
     BuildContext context,
     IconData icon,
